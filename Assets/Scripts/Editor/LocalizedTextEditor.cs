@@ -31,20 +31,21 @@ public class LocalizedTextEditor : EditorWindow {
 			LoadGameData();
 		}
 
-		if (GUILayout.Button("Create new data"))
+		/*if (GUILayout.Button("Create new data"))
 		{
 			CreateNewData();
-		}
+		}*/
 	}
 
 	private void LoadGameData() {
-		string filepath = EditorUtility.OpenFilePanel("Select localization data file", Application.streamingAssetsPath, "json");
+		string filePath = EditorUtility.OpenFilePanel("Select localization data file", Application.streamingAssetsPath, "json");
 
-		if (!string.IsNullOrEmpty(filepath))
+		if (!string.IsNullOrEmpty(filePath))
 		{
-			string dataAsJson = File.ReadAllText(filepath);
+			string data = File.ReadAllText(filePath);
+			JSONObject jsonData = new JSONObject(data);
 
-			localizationData = JsonUtility.FromJson<LocalizationData>(dataAsJson);
+			localizationData = new LocalizationData(jsonData);
 		}
 	}
 
@@ -52,7 +53,7 @@ public class LocalizedTextEditor : EditorWindow {
 		string filePath = EditorUtility.SaveFilePanel("Save localization data file", Application.streamingAssetsPath, "", "json");
 		if (!string.IsNullOrEmpty(filePath))
 		{
-			string dataAsJson = JsonUtility.ToJson(localizationData);
+			string dataAsJson = localizationData.SaveLocalizationDataToJSON().ToString();
 			File.WriteAllText(filePath, dataAsJson);
 		}
 	}

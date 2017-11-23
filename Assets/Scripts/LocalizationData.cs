@@ -25,4 +25,15 @@ public class LocalizationData {
 			}
 		}
 	}
+
+	public JSONObject SaveLocalizationDataToJSON() {
+		JSONObject data = new JSONObject();
+		foreach (var langs in languages)
+		{
+			JSONObject dict = new JSONObject(langs.Value);
+			data.AddField(langs.Key, dict);
+		}
+		Debug.Log(data);
+		return data;
+	}
 }

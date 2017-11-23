@@ -35,6 +35,7 @@ public class LocalizationManager : MonoBehaviour {
 			JSONObject jsonData = new JSONObject(data);
 
 			localizationData = new LocalizationData(jsonData);
+			localizationData.SaveLocalizationDataToJSON();
 		}
 		else
 		{
