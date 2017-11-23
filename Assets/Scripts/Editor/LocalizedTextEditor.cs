@@ -8,7 +8,7 @@ public class LocalizedTextEditor : EditorWindow {
 	public LocalizationData localizationData;
 
 	[MenuItem("Window/Localized Text Editor")]
-	static void Init() {
+	private static void Init() {
 		EditorWindow.GetWindow(typeof(LocalizedTextEditor)).Show();
 	}
 
@@ -58,6 +58,6 @@ public class LocalizedTextEditor : EditorWindow {
 	}
 
 	private void CreateNewData() {
-		localizationData = new LocalizationData();
+		//localizationData = new LocalizationData();
 	}
 }

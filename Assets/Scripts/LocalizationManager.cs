@@ -5,10 +5,13 @@ using UnityEngine;
 
 public class LocalizationManager : MonoBehaviour {
 	public static LocalizationManager instance;
-
-	private Dictionary<string, string> localizedText;
+	private LocalizationData localizationData;
+	private Dictionary<string, string> languageTranslations;
 	private bool isReady = false;
 	private string missingTextString = "Localized text not found";
+
+	private string defaultLanguage = "default";
+	private string selectedLanguage;
 
 	private void Awake() {
 		if (instance == null)
@@ -21,36 +24,43 @@ public class LocalizationManager : MonoBehaviour {
 		}
 
 		DontDestroyOnLoad(gameObject);
-		LoadLocalizadText("de");
+		InitLocalizationData();
 	}
 
-	public void LoadLocalizadText(string language) {
-		localizedText = new Dictionary<string, string>();
-		string filePath = Path.Combine(Application.streamingAssetsPath, language + ".json");
+	private void InitLocalizationData() {
+		string filePath = Path.Combine(Application.streamingAssetsPath, "lang.json");
 		if (File.Exists(filePath))
 		{
-			string dataAsJson = File.ReadAllText(filePath);
-			LocalizationData loadedData = JsonUtility.FromJson<LocalizationData>(dataAsJson);
+			string data = File.ReadAllText(filePath);
+			JSONObject jsonData = new JSONObject(data);
 
-			for (int i = 0; i < loadedData.items.Length; i++)
-			{
-				localizedText.Add(loadedData.items[i].key, loadedData.items[i].value);
-			}
-
-			Debug.Log("Data loaded, dictionary contains: " + localizedText.Count + " entries");
+			localizationData = new LocalizationData(jsonData);
 		}
 		else
 		{
 			Debug.LogError("Cannot find file!");
 		}
+		LoadLanguage("pl");
 		isReady = true;
+	}
+
+	public void LoadLanguage(string language) {
+		if (localizationData.languages.ContainsKey(language))
+		{
+			selectedLanguage = language;
+		}
+		else
+		{
+			selectedLanguage = defaultLanguage;
+		}
+		languageTranslations = localizationData.languages[selectedLanguage];
 	}
 
 	public string GetLocalizedValue(string key) {
 		string result = missingTextString;
-		if (localizedText.ContainsKey(key))
+		if (languageTranslations.ContainsKey(key))
 		{
-			result = localizedText[key];
+			result = languageTranslations[key];
 		}
 		return result;
 	}

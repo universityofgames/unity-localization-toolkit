@@ -1,0 +1,5 @@
+{
+    "root":[{"key":"hello","value":"Hallo"}, {"key":"bye","value":"bye"}],
+    "en":[{"key":"hello","value":"Hallo"}, {"key":"bye","value":"bye"}],
+    "pl":[{"key":"hello","value":"Witaj"}, {"key":"bye","value":"zegnaj"}]
+}
