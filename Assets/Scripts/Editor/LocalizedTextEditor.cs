@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,16 +23,7 @@ public class LocalizedTextEditor : EditorWindow {
 			float spacePerLabel = position.width / (localizationData.languages.Count + 1);
 
 			DrawLabels(spacePerLabel);
-			foreach (string key in localizationData.languages["default"].Keys)
-			{
-				GUILayout.BeginHorizontal();
-				GUILayout.Label(key, GUILayout.Width(spacePerLabel));
-				foreach (var translations in localizationData.languages.Values)
-				{
-					GUILayout.Label(translations[key], GUILayout.Width(spacePerLabel));
-				}
-				GUILayout.EndHorizontal();
-			}
+			DrawLocalizationGrid(spacePerLabel);
 
 			serializedObject.ApplyModifiedProperties();
 
@@ -60,6 +52,49 @@ public class LocalizedTextEditor : EditorWindow {
 			GUILayout.Label(key, GUILayout.Width(spacePerLabel));
 		}
 		GUILayout.EndHorizontal();
+	}
+
+	private void DrawLocalizationGrid(float spacePerLabel) {
+		Dictionary<string, Dictionary<string, string>> tempSyncDict = new Dictionary<string, Dictionary<string, string>>();
+		Dictionary<string, string> keysToReplace = new Dictionary<string, string>();
+
+		tempSyncDict.Add("default", new Dictionary<string, string>());
+		foreach (string key in localizationData.languages["default"].Keys)
+		{
+			GUILayout.BeginHorizontal();
+			string newKey = GUILayout.TextField(key, GUILayout.Width(spacePerLabel));
+			if (key != newKey)
+				keysToReplace.Add(key, newKey);
+
+			List<string> keys = new List<string>(localizationData.languages.Keys);
+			for (int i = 0; i < keys.Count; i++)
+			{
+				if (tempSyncDict.ContainsKey(keys[i]) == false)
+					tempSyncDict.Add(keys[i], new Dictionary<string, string>());
+				tempSyncDict[keys[i]][key] = GUILayout.TextField(localizationData.languages[keys[i]][key], GUILayout.Width(spacePerLabel));
+			}
+
+			GUILayout.EndHorizontal();
+		}
+
+		localizationData.languages = tempSyncDict;
+		UpdateKeys(keysToReplace);
+	}
+
+	private void UpdateKeys(Dictionary<string, string> keysToReplace) {
+		List<string> keys = new List<string>(localizationData.languages.Keys);
+		foreach (var pair in keysToReplace)
+		{
+			for (int i = 0; i < keys.Count; i++)
+			{
+				if (localizationData.languages[keys[i]].ContainsKey(pair.Value))
+				{
+					continue;
+				}
+				localizationData.languages[keys[i]].Add(pair.Value, localizationData.languages[keys[i]][pair.Key]);
+				localizationData.languages[keys[i]].Remove(pair.Key);
+			}
+		}
 	}
 
 	private void LoadGameData() {
