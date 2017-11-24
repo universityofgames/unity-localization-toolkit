@@ -21,7 +21,8 @@ public class LocalizationData {
 			languages.Add(language, new Dictionary<string, string>());
 			for (int j = 0; j < languageJSON.Count; j++)
 			{
-				languages[language].Add(languageJSON[j]["key"].str, languageJSON[j]["value"].str);
+				string key = languageJSON.keys[j];
+				languages[language].Add(key, languageJSON[key].str);
 			}
 		}
 	}
