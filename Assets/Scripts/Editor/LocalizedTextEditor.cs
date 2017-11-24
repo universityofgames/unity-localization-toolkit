@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -9,15 +10,29 @@ public class LocalizedTextEditor : EditorWindow {
 
 	[MenuItem("Window/Localized Text Editor")]
 	private static void Init() {
-		EditorWindow.GetWindow(typeof(LocalizedTextEditor)).Show();
+		GetWindow<LocalizedTextEditor>("Localization editor");
 	}
 
 	private void OnGUI() {
 		if (localizationData != null)
 		{
 			SerializedObject serializedObject = new SerializedObject(this);
-			SerializedProperty serializedProperty = serializedObject.FindProperty("localizationData");
-			EditorGUILayout.PropertyField(serializedProperty, true);
+			//SerializedProperty serializedProperty = serializedObject.FindProperty("localizationData");
+			//EditorGUILayout.PropertyField(serializedProperty, true);
+			float spacePerLabel = position.width / (localizationData.languages.Count + 1);
+
+			DrawLabels(spacePerLabel);
+			foreach (string key in localizationData.languages["default"].Keys)
+			{
+				GUILayout.BeginHorizontal();
+				GUILayout.Label(key, GUILayout.Width(spacePerLabel));
+				foreach (var translations in localizationData.languages.Values)
+				{
+					GUILayout.Label(translations[key], GUILayout.Width(spacePerLabel));
+				}
+				GUILayout.EndHorizontal();
+			}
+
 			serializedObject.ApplyModifiedProperties();
 
 			if (GUILayout.Button("Save data"))
@@ -35,6 +50,16 @@ public class LocalizedTextEditor : EditorWindow {
 		{
 			CreateNewData();
 		}
+	}
+
+	private void DrawLabels(float spacePerLabel) {
+		GUILayout.BeginHorizontal();
+		GUILayout.Label("Keys", GUILayout.Width(spacePerLabel));
+		foreach (string key in localizationData.languages.Keys)
+		{
+			GUILayout.Label(key, GUILayout.Width(spacePerLabel));
+		}
+		GUILayout.EndHorizontal();
 	}
 
 	private void LoadGameData() {
