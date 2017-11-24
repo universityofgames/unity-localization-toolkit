@@ -31,10 +31,10 @@ public class LocalizedTextEditor : EditorWindow {
 			LoadGameData();
 		}
 
-		/*if (GUILayout.Button("Create new data"))
+		if (GUILayout.Button("Create new data"))
 		{
 			CreateNewData();
-		}*/
+		}
 	}
 
 	private void LoadGameData() {
@@ -59,6 +59,6 @@ public class LocalizedTextEditor : EditorWindow {
 	}
 
 	private void CreateNewData() {
-		//localizationData = new LocalizationData();
+		localizationData = new LocalizationData();
 	}
 }

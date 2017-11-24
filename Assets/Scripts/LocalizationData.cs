@@ -7,6 +7,11 @@ using UnityEngine;
 public class LocalizationData {
 	public Dictionary<string, Dictionary<string, string>> languages;
 
+	public LocalizationData() {
+		languages = new Dictionary<string, Dictionary<string, string>>();
+		languages.Add("default", new Dictionary<string, string>());
+	}
+
 	public LocalizationData(JSONObject jsonData) {
 		languages = new Dictionary<string, Dictionary<string, string>>();
 		LoadObjectFromJSON(jsonData);
