@@ -59,10 +59,13 @@ public class LocalizedTextEditor : EditorWindow {
 		Dictionary<string, string> keysToReplace = new Dictionary<string, string>();
 
 		tempSyncDict.Add("default", new Dictionary<string, string>());
-		foreach (string key in localizationData.languages["default"].Keys)
+		List<string> localizationKeys = new List<string>(localizationData.languages["default"].Keys);
+		localizationKeys.Sort();
+		foreach (string key in localizationKeys)
 		{
 			GUILayout.BeginHorizontal();
 			string newKey = GUILayout.TextField(key, GUILayout.Width(spacePerLabel));
+
 			if (key != newKey)
 				keysToReplace.Add(key, newKey);
 
@@ -77,8 +80,11 @@ public class LocalizedTextEditor : EditorWindow {
 			GUILayout.EndHorizontal();
 		}
 
-		localizationData.languages = tempSyncDict;
-		UpdateKeys(keysToReplace);
+		if (GUI.changed)
+		{
+			localizationData.languages = tempSyncDict;
+			UpdateKeys(keysToReplace);
+		}
 	}
 
 	private void UpdateKeys(Dictionary<string, string> keysToReplace) {
