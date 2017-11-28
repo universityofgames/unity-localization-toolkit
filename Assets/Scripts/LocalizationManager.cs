@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class LocalizationManager : MonoBehaviour {
 	public static LocalizationManager instance;
 
 	public static event Action OnLanguageChanged;
 
+	public string fileName;
+
 	private LocalizationData localizationData;
 
 	private Dictionary<string, string> languageTranslations;
-	private bool isReady = false;
 	private string missingTextString = "Localized text not found";
 
 	private string defaultLanguage = "default";
@@ -30,12 +32,11 @@ public class LocalizationManager : MonoBehaviour {
 			Destroy(gameObject);
 		}
 
-		DontDestroyOnLoad(gameObject);
 		InitLocalizationData();
 	}
 
-	private void InitLocalizationData() {
-		string filePath = Path.Combine(Application.streamingAssetsPath, "lang.json");
+	public void InitLocalizationData() {
+		string filePath = Path.Combine(Application.streamingAssetsPath, fileName + ".json");
 		if (File.Exists(filePath))
 		{
 			string data = File.ReadAllText(filePath);
@@ -43,13 +44,13 @@ public class LocalizationManager : MonoBehaviour {
 
 			localizationData = new LocalizationData(jsonData);
 			localizationData.SaveLocalizationDataToJSON();
+
+			LoadLanguage("pl");
 		}
 		else
 		{
 			Debug.LogError("Cannot find file!");
 		}
-		LoadLanguage("pl");
-		isReady = true;
 	}
 
 	public void LoadLanguage(string language) {
@@ -75,14 +76,16 @@ public class LocalizationManager : MonoBehaviour {
 		return result;
 	}
 
-	public bool GetIsReady() {
-		return isReady;
-	}
-
 	public string[] GetAvailableLanguages() {
 		if (localizationData == null)
 			return null;
 
 		return new List<string>(localizationData.languages.Keys).ToArray();
+	}
+
+	public string[] GetKeys() {
+		if (localizationData == null)
+			return null;
+		return new List<string>(localizationData.languages[defaultLanguage].Keys).ToArray();
 	}
 }
