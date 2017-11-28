@@ -23,7 +23,8 @@ public class LocalizedTextEditor : EditorWindow {
 	private int enumWidth = 350;
 	private int buttonWidth = 200;
 	private SystemLanguage selectedLanguage = SystemLanguage.English;
-	private SystemLanguage filterLanguage = SystemLanguage.English;
+	private string[] languageNames;
+	private int filterKeyIndex = 0;
 
 	[MenuItem("Window/Localized Text Editor")]
 	private static void Init() {
@@ -35,7 +36,9 @@ public class LocalizedTextEditor : EditorWindow {
 		{
 			SerializedObject serializedObject = new SerializedObject(this);
 			float spacePerLabel = (position.width - removeButtonWidth - fromRightOffset) / labelsCount;
-			filterLanguage = (SystemLanguage)EditorGUILayout.EnumPopup("Select Language", filterLanguage, GUILayout.MaxWidth(enumWidth));
+			languageNames = new List<string>(localizationData.languages.Keys).ToArray();
+
+			filterKeyIndex = EditorGUILayout.Popup("Select Language", filterKeyIndex, languageNames, GUILayout.MaxWidth(enumWidth));
 
 			DrawLabels(spacePerLabel);
 			DrawLocalizationGrid(spacePerLabel);
@@ -74,7 +77,6 @@ public class LocalizedTextEditor : EditorWindow {
 	}
 
 	private void DrawLabels(float spacePerLabel) {
-		string lang = filterLanguage.ToString();
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("Key", GUILayout.MinWidth(minTextFieldWidth), GUILayout.MaxWidth(spacePerLabel));
 		GUILayout.Label("Value", GUILayout.MinWidth(minTextFieldWidth), GUILayout.MaxWidth(spacePerLabel));
@@ -106,7 +108,7 @@ public class LocalizedTextEditor : EditorWindow {
 			}
 
 			List<string> keys = new List<string>(localizationData.languages.Keys);
-			string lang = filterLanguage.ToString();
+			string lang = languageNames[filterKeyIndex];
 			for (int i = 0; i < keys.Count; i++)
 			{
 				if (tempSyncDict.ContainsKey(keys[i]) == false)
