@@ -23,9 +23,10 @@ public class LocalizedTextEditor : EditorWindow {
 	private int labelsCount = 2;
 	private int enumWidth = 350;
 	private int buttonWidth = 200;
-	private SystemLanguage selectedLanguage = SystemLanguage.English;
-	private string[] languageNames;
+	private string[] languageNamesToFilter;
+	private string[] availableLanguagesToAdd;
 	private int filterKeyIndex = 0;
+	private int selectedLanguageIndex = 0;
 
 	[MenuItem("Window/Localized Text Editor")]
 	private static void Init() {
@@ -35,11 +36,10 @@ public class LocalizedTextEditor : EditorWindow {
 	private void OnGUI() {
 		if (localizationData != null)
 		{
-			SerializedObject serializedObject = new SerializedObject(this);
 			float spacePerLabel = (position.width - removeButtonWidth - fromRightOffset) / labelsCount;
-			languageNames = new List<string>(localizationData.languages.Keys).ToArray();
-
-			filterKeyIndex = EditorGUILayout.Popup("Select Language", filterKeyIndex, languageNames, GUILayout.MaxWidth(enumWidth));
+			languageNamesToFilter = new List<string>(localizationData.languages.Keys).ToArray();
+			availableLanguagesToAdd = ExcludeAlreadyImplementedLanguagesFromDefaultLanguagesList();
+			filterKeyIndex = EditorGUILayout.Popup("Select Language", filterKeyIndex, languageNamesToFilter, GUILayout.MaxWidth(enumWidth));
 
 			DrawLabels(spacePerLabel);
 			DrawLocalizationGrid(spacePerLabel);
@@ -55,7 +55,7 @@ public class LocalizedTextEditor : EditorWindow {
 			{
 				AddNewLanguage();
 			}
-			selectedLanguage = (SystemLanguage)EditorGUILayout.EnumPopup("Language", selectedLanguage, GUILayout.MaxWidth(enumWidth));
+			selectedLanguageIndex = EditorGUILayout.Popup("Language", selectedLanguageIndex, availableLanguagesToAdd, GUILayout.MaxWidth(enumWidth));
 
 			GUILayout.EndHorizontal();
 			if (GUILayout.Button("Remove selected language", GUILayout.Width(buttonWidth)))
@@ -79,6 +79,15 @@ public class LocalizedTextEditor : EditorWindow {
 		{
 			CreateNewData();
 		}
+	}
+
+	private string[] ExcludeAlreadyImplementedLanguagesFromDefaultLanguagesList() {
+		List<string> languages = Enum.GetNames(typeof(SystemLanguage)).ToList();
+		for (int i = 0; i < languageNamesToFilter.Length; i++)
+		{
+			languages.Remove(languageNamesToFilter[i]);
+		}
+		return languages.ToArray();
 	}
 
 	private void DrawLabels(float spacePerLabel) {
@@ -113,7 +122,7 @@ public class LocalizedTextEditor : EditorWindow {
 			}
 
 			List<string> keys = new List<string>(localizationData.languages.Keys);
-			string lang = languageNames[filterKeyIndex];
+			string lang = languageNamesToFilter[filterKeyIndex];
 			for (int i = 0; i < keys.Count; i++)
 			{
 				if (tempSyncDict.ContainsKey(keys[i]) == false)
@@ -204,7 +213,13 @@ public class LocalizedTextEditor : EditorWindow {
 	}
 
 	private void AddNewLanguage() {
-		string languageCode = selectedLanguage.ToString();
+		if (availableLanguagesToAdd.Length <= 0)
+		{
+			Debug.LogError("There is no any language to add.");
+			return;
+		}
+
+		string languageCode = availableLanguagesToAdd[selectedLanguageIndex];
 		if (localizationData.languages.ContainsKey(languageCode))
 		{
 			Debug.LogError("Translation already has this language");
@@ -221,7 +236,7 @@ public class LocalizedTextEditor : EditorWindow {
 	}
 
 	private void RemoveSelectedLanguage() {
-		string lang = languageNames[filterKeyIndex];
+		string lang = languageNamesToFilter[filterKeyIndex];
 		if (lang == defaultLangName)
 		{
 			Debug.LogError("Can't remove default language");
@@ -255,6 +270,7 @@ public class LocalizedTextEditor : EditorWindow {
 
 		if (!string.IsNullOrEmpty(filePath))
 		{
+			ResetIndexes();
 			string data = File.ReadAllText(filePath);
 			JSONObject jsonData = new JSONObject(data);
 
@@ -272,6 +288,12 @@ public class LocalizedTextEditor : EditorWindow {
 	}
 
 	private void CreateNewData() {
+		ResetIndexes();
 		localizationData = new LocalizationData();
+	}
+
+	private void ResetIndexes() {
+		filterKeyIndex = 0;
+		selectedLanguageIndex = 0;
 	}
 }
