@@ -6,9 +6,19 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Text))]
 public class LocalizedText : MonoBehaviour {
 	public string key;
+	private Text myText;
 
 	private void Start() {
-		Text text = GetComponent<Text>();
-		text.text = LocalizationManager.instance.GetLocalizedValue(key);
+		myText = GetComponent<Text>();
+		RefreshText();
+		LocalizationManager.OnLanguageChanged += RefreshText;
+	}
+
+	private void OnDestroy() {
+		LocalizationManager.OnLanguageChanged -= RefreshText;
+	}
+
+	private void RefreshText() {
+		myText.text = LocalizationManager.instance.GetLocalizedValue(key);
 	}
 }

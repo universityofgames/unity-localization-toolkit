@@ -7,6 +7,8 @@ using UnityEngine;
 public class LocalizationManager : MonoBehaviour {
 	public static LocalizationManager instance;
 
+	public static event Action OnLanguageChanged;
+
 	private LocalizationData localizationData;
 
 	private Dictionary<string, string> languageTranslations;
@@ -60,6 +62,8 @@ public class LocalizationManager : MonoBehaviour {
 			selectedLanguage = defaultLanguage;
 		}
 		languageTranslations = localizationData.languages[selectedLanguage];
+		if (OnLanguageChanged != null)
+			OnLanguageChanged();
 	}
 
 	public string GetLocalizedValue(string key) {
