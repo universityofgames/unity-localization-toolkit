@@ -43,6 +43,7 @@ public class LocalizedTextEditor : EditorWindow {
 
 			DrawLabels(spacePerLabel);
 			DrawLocalizationGrid(spacePerLabel);
+			GUILayout.Space(25);
 
 			if (GUILayout.Button("Add new entry", GUILayout.Width(buttonWidth)))
 			{
@@ -61,7 +62,7 @@ public class LocalizedTextEditor : EditorWindow {
 			{
 				RemoveSelectedLanguage();
 			}
-			GUILayout.Space(50);
+			GUILayout.Space(25);
 
 			if (GUILayout.Button("Save data"))
 			{
