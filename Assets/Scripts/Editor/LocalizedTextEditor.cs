@@ -19,7 +19,11 @@ public class LocalizedTextEditor : EditorWindow {
 	private TextEditor textEditor;
 	private int lastCursorPos = 0;
 	private int lastSelectCursorPos = 0;
+	private int labelsCount = 2;
+	private int enumWidth = 350;
+	private int buttonWidth = 200;
 	private SystemLanguage selectedLanguage = SystemLanguage.English;
+	private SystemLanguage filterLanguage = SystemLanguage.English;
 
 	[MenuItem("Window/Localized Text Editor")]
 	private static void Init() {
@@ -30,19 +34,20 @@ public class LocalizedTextEditor : EditorWindow {
 		if (localizationData != null)
 		{
 			SerializedObject serializedObject = new SerializedObject(this);
-			float spacePerLabel = (position.width - removeButtonWidth - fromRightOffset) / (localizationData.languages.Count + 1);
+			float spacePerLabel = (position.width - removeButtonWidth - fromRightOffset) / labelsCount;
+			filterLanguage = (SystemLanguage)EditorGUILayout.EnumPopup("Select Language", filterLanguage, GUILayout.MaxWidth(enumWidth));
 
 			DrawLabels(spacePerLabel);
 			DrawLocalizationGrid(spacePerLabel);
 
-			if (GUILayout.Button("Add new entry", GUILayout.Width(spacePerLabel)))
+			if (GUILayout.Button("Add new entry", GUILayout.Width(buttonWidth)))
 			{
 				AddNewEntry();
 			}
 
 			GUILayout.BeginHorizontal();
-			selectedLanguage = (SystemLanguage)EditorGUILayout.EnumPopup("Language", selectedLanguage);
-			if (GUILayout.Button("Add new language", GUILayout.Width(spacePerLabel)))
+			selectedLanguage = (SystemLanguage)EditorGUILayout.EnumPopup("Language", selectedLanguage, GUILayout.MaxWidth(enumWidth));
+			if (GUILayout.Button("Add new language", GUILayout.Width(buttonWidth)))
 			{
 				AddNewLanguage();
 			}
@@ -69,12 +74,10 @@ public class LocalizedTextEditor : EditorWindow {
 	}
 
 	private void DrawLabels(float spacePerLabel) {
+		string lang = filterLanguage.ToString();
 		GUILayout.BeginHorizontal();
-		GUILayout.Label("Keys", GUILayout.MinWidth(minTextFieldWidth), GUILayout.MaxWidth(spacePerLabel));
-		foreach (string key in localizationData.languages.Keys)
-		{
-			GUILayout.Label(key, GUILayout.MinWidth(minTextFieldWidth), GUILayout.MaxWidth(spacePerLabel));
-		}
+		GUILayout.Label("Key", GUILayout.MinWidth(minTextFieldWidth), GUILayout.MaxWidth(spacePerLabel));
+		GUILayout.Label("Value", GUILayout.MinWidth(minTextFieldWidth), GUILayout.MaxWidth(spacePerLabel));
 		GUILayout.EndHorizontal();
 	}
 
@@ -103,11 +106,19 @@ public class LocalizedTextEditor : EditorWindow {
 			}
 
 			List<string> keys = new List<string>(localizationData.languages.Keys);
+			string lang = filterLanguage.ToString();
 			for (int i = 0; i < keys.Count; i++)
 			{
 				if (tempSyncDict.ContainsKey(keys[i]) == false)
 					tempSyncDict.Add(keys[i], new Dictionary<string, string>());
-				tempSyncDict[keys[i]][key] = GUILayout.TextField(localizationData.languages[keys[i]][key], GUILayout.MinWidth(minTextFieldWidth), GUILayout.MaxWidth(spacePerLabel));
+				if (keys[i] == lang)
+				{
+					tempSyncDict[keys[i]][key] = GUILayout.TextField(localizationData.languages[keys[i]][key], GUILayout.MinWidth(minTextFieldWidth), GUILayout.MaxWidth(spacePerLabel));
+				}
+				else
+				{
+					tempSyncDict[keys[i]][key] = localizationData.languages[keys[i]][key];
+				}
 			}
 
 			if (GUILayout.Button("-", GUILayout.Width(removeButtonWidth)))
@@ -186,7 +197,7 @@ public class LocalizedTextEditor : EditorWindow {
 	}
 
 	private void AddNewLanguage() {
-		string languageCode = selectedLanguage.ToString();//LanguageCodeHelper.GetCodeFromLanguageName(selectedLanguage);
+		string languageCode = selectedLanguage.ToString();
 		if (localizationData.languages.ContainsKey(languageCode))
 		{
 			Debug.LogError("Translation already has this language");
