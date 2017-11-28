@@ -8,6 +8,7 @@ using UnityEngine;
 
 public class LocalizedTextEditor : EditorWindow {
 	public LocalizationData localizationData;
+	private string defaultLangName = "default";
 	private string defaultKeyName = "NEW_KEY";
 	private float removeButtonWidth = 50;
 	private float minTextFieldWidth = 300;
@@ -49,14 +50,17 @@ public class LocalizedTextEditor : EditorWindow {
 			}
 
 			GUILayout.BeginHorizontal();
-			selectedLanguage = (SystemLanguage)EditorGUILayout.EnumPopup("Language", selectedLanguage, GUILayout.MaxWidth(enumWidth));
 			if (GUILayout.Button("Add new language", GUILayout.Width(buttonWidth)))
 			{
 				AddNewLanguage();
 			}
+			selectedLanguage = (SystemLanguage)EditorGUILayout.EnumPopup("Language", selectedLanguage, GUILayout.MaxWidth(enumWidth));
 
 			GUILayout.EndHorizontal();
-
+			if (GUILayout.Button("Remove selected language", GUILayout.Width(buttonWidth)))
+			{
+				RemoveSelectedLanguage();
+			}
 			GUILayout.Space(50);
 
 			if (GUILayout.Button("Save data"))
@@ -88,8 +92,8 @@ public class LocalizedTextEditor : EditorWindow {
 		Dictionary<string, string> keysToReplace = new Dictionary<string, string>();
 		List<string> keysToRemove = new List<string>();
 
-		tempSyncDict.Add("default", new Dictionary<string, string>());
-		List<string> localizationKeys = new List<string>(localizationData.languages["default"].Keys);
+		tempSyncDict.Add(defaultLangName, new Dictionary<string, string>());
+		List<string> localizationKeys = new List<string>(localizationData.languages[defaultLangName].Keys);
 		localizationKeys.Sort();
 
 		int elementID = 0;
@@ -189,7 +193,7 @@ public class LocalizedTextEditor : EditorWindow {
 	private string GetNewKeyName() {
 		string key = defaultKeyName;
 		int iterations = 0;
-		while (localizationData.languages["default"].ContainsKey(key))
+		while (localizationData.languages[defaultLangName].ContainsKey(key))
 		{
 			key = defaultKeyName + "_" + iterations;
 			iterations++;
@@ -207,11 +211,24 @@ public class LocalizedTextEditor : EditorWindow {
 		else
 		{
 			localizationData.languages.Add(languageCode, new Dictionary<string, string>());
-			List<string> localizationKeys = new List<string>(localizationData.languages["default"].Keys);
+			List<string> localizationKeys = new List<string>(localizationData.languages[defaultLangName].Keys);
 			for (int i = 0; i < localizationKeys.Count; i++)
 			{
 				localizationData.languages[languageCode].Add(localizationKeys[i], "");
 			}
+		}
+	}
+
+	private void RemoveSelectedLanguage() {
+		string lang = languageNames[filterKeyIndex];
+		if (lang == defaultLangName)
+		{
+			Debug.LogError("Can't remove default language");
+		}
+		else
+		{
+			localizationData.languages.Remove(lang);
+			filterKeyIndex = 0;
 		}
 	}
 
