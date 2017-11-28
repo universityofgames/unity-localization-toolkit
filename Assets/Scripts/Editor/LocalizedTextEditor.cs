@@ -14,6 +14,12 @@ public class LocalizedTextEditor : EditorWindow {
 	private float fromRightOffset = 50;
 	private Vector2 maxWindowSize = new Vector2(1024, 600);
 	private Vector2 scrollPos;
+	private string lastEditedElement;
+	private bool needsRefocus;
+	private TextEditor textEditor;
+	private int lastCursorPos = 0;
+	private int lastSelectCursorPos = 0;
+	private SystemLanguage selectedLanguage = SystemLanguage.English;
 
 	[MenuItem("Window/Localized Text Editor")]
 	private static void Init() {
@@ -25,7 +31,6 @@ public class LocalizedTextEditor : EditorWindow {
 		{
 			SerializedObject serializedObject = new SerializedObject(this);
 			float spacePerLabel = (position.width - removeButtonWidth - fromRightOffset) / (localizationData.languages.Count + 1);
-			//scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(maxWindowSize.x), GUILayout.Height(maxWindowSize.y));
 
 			DrawLabels(spacePerLabel);
 			DrawLocalizationGrid(spacePerLabel);
@@ -34,7 +39,15 @@ public class LocalizedTextEditor : EditorWindow {
 			{
 				AddNewEntry();
 			}
-			//	EditorGUILayout.EndScrollView();
+
+			GUILayout.BeginHorizontal();
+			selectedLanguage = (SystemLanguage)EditorGUILayout.EnumPopup("Language", selectedLanguage);
+			if (GUILayout.Button("Add new language", GUILayout.Width(spacePerLabel)))
+			{
+				AddNewLanguage();
+			}
+
+			GUILayout.EndHorizontal();
 
 			GUILayout.Space(50);
 
@@ -65,12 +78,6 @@ public class LocalizedTextEditor : EditorWindow {
 		GUILayout.EndHorizontal();
 	}
 
-	private string lastEditedElement;
-	private bool needsRefocus;
-	private TextEditor te;
-	private int lastCursorPos = 0;
-	private int lastSelectCursorPos = 0;
-
 	private void DrawLocalizationGrid(float spacePerLabel) {
 		Dictionary<string, Dictionary<string, string>> tempSyncDict = new Dictionary<string, Dictionary<string, string>>();
 		Dictionary<string, string> keysToReplace = new Dictionary<string, string>();
@@ -92,7 +99,7 @@ public class LocalizedTextEditor : EditorWindow {
 				lastEditedElement = newKey;
 				needsRefocus = true;
 				keysToReplace.Add(key, newKey);
-				te = GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl) as TextEditor;
+				textEditor = GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl) as TextEditor;
 			}
 
 			List<string> keys = new List<string>(localizationData.languages.Keys);
@@ -122,10 +129,10 @@ public class LocalizedTextEditor : EditorWindow {
 			CheckIfNeedRefocus(localizationKeys);
 		}
 
-		if (te != null)
+		if (textEditor != null)
 		{
-			lastCursorPos = te.cursorIndex;
-			lastSelectCursorPos = te.selectIndex;
+			lastCursorPos = textEditor.cursorIndex;
+			lastSelectCursorPos = textEditor.selectIndex;
 		}
 	}
 
@@ -178,19 +185,36 @@ public class LocalizedTextEditor : EditorWindow {
 		return key;
 	}
 
+	private void AddNewLanguage() {
+		string languageCode = selectedLanguage.ToString();//LanguageCodeHelper.GetCodeFromLanguageName(selectedLanguage);
+		if (localizationData.languages.ContainsKey(languageCode))
+		{
+			Debug.LogError("Translation already has this language");
+		}
+		else
+		{
+			localizationData.languages.Add(languageCode, new Dictionary<string, string>());
+			List<string> localizationKeys = new List<string>(localizationData.languages["default"].Keys);
+			for (int i = 0; i < localizationKeys.Count; i++)
+			{
+				localizationData.languages[languageCode].Add(localizationKeys[i], "");
+			}
+		}
+	}
+
 	private void CheckIfNeedRefocus(List<string> localizationKeys) {
 		if (needsRefocus)
 		{
 			needsRefocus = false;
 			int id = localizationKeys.IndexOf(lastEditedElement);
 			GUI.FocusControl(id.ToString());
-			te = GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl) as TextEditor;
+			textEditor = GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl) as TextEditor;
 
-			if (te != null)
+			if (textEditor != null)
 			{
-				te.OnFocus();
-				te.cursorIndex = lastCursorPos;
-				te.selectIndex = lastSelectCursorPos;
+				textEditor.OnFocus();
+				textEditor.cursorIndex = lastCursorPos;
+				textEditor.selectIndex = lastSelectCursorPos;
 			}
 		}
 	}
