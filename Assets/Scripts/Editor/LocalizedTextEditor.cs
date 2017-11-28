@@ -105,6 +105,7 @@ public class LocalizedTextEditor : EditorWindow {
 		tempSyncDict.Add(defaultLangName, new Dictionary<string, string>());
 		List<string> localizationKeys = new List<string>(localizationData.languages[defaultLangName].Keys);
 		localizationKeys.Sort();
+		scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
 		int elementID = 0;
 		foreach (string key in localizationKeys)
@@ -144,6 +145,7 @@ public class LocalizedTextEditor : EditorWindow {
 			GUILayout.EndHorizontal();
 			elementID++;
 		}
+		EditorGUILayout.EndScrollView();
 
 		if (GUI.changed)
 		{
