@@ -6,12 +6,16 @@ using UnityEngine;
 
 public class LocalizationManager : MonoBehaviour {
 	public static LocalizationManager instance;
+
 	private LocalizationData localizationData;
+
 	private Dictionary<string, string> languageTranslations;
 	private bool isReady = false;
 	private string missingTextString = "Localized text not found";
 
 	private string defaultLanguage = "default";
+
+	[SerializeField]
 	private string selectedLanguage;
 
 	private void Awake() {
@@ -69,5 +73,12 @@ public class LocalizationManager : MonoBehaviour {
 
 	public bool GetIsReady() {
 		return isReady;
+	}
+
+	public string[] GetAvailableLanguages() {
+		if (localizationData == null)
+			return null;
+
+		return new List<string>(localizationData.languages.Keys).ToArray();
 	}
 }
