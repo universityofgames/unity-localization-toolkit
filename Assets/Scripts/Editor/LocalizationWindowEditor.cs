@@ -37,55 +37,47 @@ public class LocalizationWindowEditor : EditorWindow {
 		{
 			float spacePerLabel = (position.width - removeButtonWidth - fromRightOffset) / labelsCount;
 			languageNamesToFilter = new List<string>(localizationData.languages.Keys).ToArray();
-			availableLanguagesToAdd = ExcludeAlreadyImplementedLanguagesFromDefaultLanguagesList();
 
 			GUILayout.Space(10);
 
 			GUILayout.BeginHorizontal();
-			GUILayout.BeginVertical(GUILayout.Width(spacePerLabel));
-			filterKeyIndex = EditorGUILayout.Popup("Select Language", filterKeyIndex, languageNamesToFilter, GUILayout.MaxWidth(enumWidth));
-			GUILayout.EndVertical();
-
-			GUILayout.BeginVertical(GUILayout.Width(spacePerLabel));
-
-			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Add new language", GUILayout.Width(buttonWidth)))
 			{
-				AddNewLanguage();
-			}
+				GUILayout.BeginVertical(GUILayout.Width(spacePerLabel));
+				{
+					DrawLanguageSelection();
+				}
+				GUILayout.EndVertical();
 
-			if (selectedLanguageIndex >= availableLanguagesToAdd.Length && availableLanguagesToAdd.Length > 0)
-			{
-				selectedLanguageIndex = 0;
-			}
-			selectedLanguageIndex = EditorGUILayout.Popup("Language", selectedLanguageIndex, availableLanguagesToAdd, GUILayout.MaxWidth(enumWidth));
+				GUILayout.BeginVertical(GUILayout.Width(spacePerLabel));
+				{
+					GUILayout.BeginHorizontal();
+					{
+						DrawAddNewLanguage();
+					}
+					GUILayout.EndHorizontal();
 
+					DrawRemoveLanguage();
+					DrawAddNewValue();
+				}
+				GUILayout.EndVertical();
+			}
 			GUILayout.EndHorizontal();
 
-			if (GUILayout.Button("Remove selected language", GUILayout.Width(buttonWidth)))
-			{
-				RemoveSelectedLanguage();
-			}
-
-			if (GUILayout.Button("Add new entry", GUILayout.Width(buttonWidth)))
-			{
-				AddNewEntry();
-			}
-			GUILayout.EndVertical();
-
-			GUILayout.EndHorizontal();
-
-			GUILayout.Space(25);
+			GUILayout.Space(15);
 
 			DrawLabels(spacePerLabel);
 			DrawLocalizationGrid(spacePerLabel);
 
-			GUILayout.Space(25);
+			GUILayout.Space(15);
 
 			if (GUILayout.Button("Save data"))
 			{
 				SaveGameData();
 			}
+		}
+		else
+		{
+			GUILayout.Space(15);
 		}
 
 		if (GUILayout.Button("Load data"))
@@ -97,6 +89,26 @@ public class LocalizationWindowEditor : EditorWindow {
 		{
 			CreateNewData();
 		}
+		GUILayout.Space(10);
+	}
+
+	private void DrawLanguageSelection() {
+		filterKeyIndex = EditorGUILayout.Popup("Select Language", filterKeyIndex, languageNamesToFilter, GUILayout.MaxWidth(enumWidth));
+	}
+
+	private void DrawAddNewLanguage() {
+		availableLanguagesToAdd = ExcludeAlreadyImplementedLanguagesFromDefaultLanguagesList();
+
+		if (GUILayout.Button("Add new language", GUILayout.Width(buttonWidth)))
+		{
+			AddNewLanguage();
+		}
+
+		if (selectedLanguageIndex >= availableLanguagesToAdd.Length && availableLanguagesToAdd.Length > 0)
+		{
+			selectedLanguageIndex = 0;
+		}
+		selectedLanguageIndex = EditorGUILayout.Popup("Language", selectedLanguageIndex, availableLanguagesToAdd, GUILayout.MaxWidth(enumWidth));
 	}
 
 	private string[] ExcludeAlreadyImplementedLanguagesFromDefaultLanguagesList() {
@@ -106,6 +118,20 @@ public class LocalizationWindowEditor : EditorWindow {
 			languages.Remove(languageNamesToFilter[i]);
 		}
 		return languages.ToArray();
+	}
+
+	private void DrawRemoveLanguage() {
+		if (GUILayout.Button("Remove selected language", GUILayout.Width(buttonWidth)))
+		{
+			RemoveSelectedLanguage();
+		}
+	}
+
+	private void DrawAddNewValue() {
+		if (GUILayout.Button("Add new entry", GUILayout.Width(buttonWidth)))
+		{
+			AddNewEntry();
+		}
 	}
 
 	private void DrawLabels(float spacePerLabel) {
