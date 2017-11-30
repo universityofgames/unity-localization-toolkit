@@ -13,19 +13,22 @@ public class LocalizationWindowEditor : EditorWindow {
 	private float removeButtonWidth = 50;
 	private float minTextFieldWidth = 300;
 	private float fromRightOffset = 50;
-	private Vector2 scrollPos;
-	private string lastEditedElement;
-	private bool needsRefocus;
-	private TextEditor textEditor;
 	private int lastCursorPos = 0;
 	private int lastSelectCursorPos = 0;
 	private int labelsCount = 2;
 	private int enumWidth = 350;
 	private int buttonWidth = 200;
+
+	private Vector2 scrollPos;
+	private string lastEditedElement;
+	private bool needsRefocus;
+	private TextEditor textEditor;
+
 	private string[] languageNamesToFilter;
 	private string[] availableLanguagesToAdd;
 	private int filterKeyIndex = 0;
 	private int selectedLanguageIndex = 0;
+	private AvailableExtensions extension;
 
 	[MenuItem("Window/Localization Editor")]
 	private static void Init() {
@@ -33,13 +36,15 @@ public class LocalizationWindowEditor : EditorWindow {
 	}
 
 	private void OnGUI() {
+		GUILayout.Space(10);
+		extension = (AvailableExtensions)EditorGUILayout.EnumPopup("File extension", extension);
+
 		if (localizationData != null)
 		{
 			float spacePerLabel = (position.width - removeButtonWidth - fromRightOffset) / labelsCount;
 			languageNamesToFilter = new List<string>(localizationData.languages.Keys).ToArray();
 
 			GUILayout.Space(10);
-
 			GUILayout.BeginHorizontal();
 			{
 				GUILayout.BeginVertical(GUILayout.Width(spacePerLabel));
@@ -312,7 +317,7 @@ public class LocalizationWindowEditor : EditorWindow {
 	}
 
 	private void LoadGameData() {
-		string filePath = EditorUtility.OpenFilePanel("Select localization data file", Application.streamingAssetsPath, "json");
+		string filePath = EditorUtility.OpenFilePanel("Select localization data file", Application.streamingAssetsPath, extension.ToString().ToLower());
 
 		if (!string.IsNullOrEmpty(filePath))
 		{
@@ -325,7 +330,7 @@ public class LocalizationWindowEditor : EditorWindow {
 	}
 
 	private void SaveGameData() {
-		string filePath = EditorUtility.SaveFilePanel("Save localization data file", Application.streamingAssetsPath, "", "json");
+		string filePath = EditorUtility.SaveFilePanel("Save localization data file", Application.streamingAssetsPath, "", extension.ToString().ToLower());
 		if (!string.IsNullOrEmpty(filePath))
 		{
 			string dataAsJson = localizationData.SaveLocalizationDataToJSON().ToString();

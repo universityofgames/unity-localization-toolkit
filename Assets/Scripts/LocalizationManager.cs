@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+public enum AvailableExtensions { json, xml };
+
 [ExecuteInEditMode]
 public class LocalizationManager : MonoBehaviour {
 	public static LocalizationManager instance;
@@ -11,6 +13,7 @@ public class LocalizationManager : MonoBehaviour {
 	public static event Action OnLanguageChanged;
 
 	public string fileName;
+	public string extension;
 
 	private LocalizationData localizationData;
 
@@ -36,7 +39,7 @@ public class LocalizationManager : MonoBehaviour {
 	}
 
 	public void InitLocalizationData() {
-		string filePath = Path.Combine(Application.streamingAssetsPath, fileName + ".json");
+		string filePath = Path.Combine(Application.streamingAssetsPath, fileName + "." + extension);
 		if (File.Exists(filePath))
 		{
 			string data = File.ReadAllText(filePath);
