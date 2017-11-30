@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Xml;
 using UnityEngine;
 
 public enum AvailableExtensions { json, xml };
@@ -13,7 +14,7 @@ public class LocalizationManager : MonoBehaviour {
 	public static event Action OnLanguageChanged;
 
 	public string fileName;
-	public string extension;
+	public AvailableExtensions extension;
 
 	private LocalizationData localizationData;
 
@@ -39,15 +40,23 @@ public class LocalizationManager : MonoBehaviour {
 	}
 
 	public void InitLocalizationData() {
-		string filePath = Path.Combine(Application.streamingAssetsPath, fileName + "." + extension);
+		string filePath = Path.Combine(Application.streamingAssetsPath, fileName + "." + extension.ToString().ToLower());
 		if (File.Exists(filePath))
 		{
 			string data = File.ReadAllText(filePath);
-			JSONObject jsonData = new JSONObject(data);
+			if (extension == AvailableExtensions.json)
+			{
+				JSONObject jsonData = new JSONObject(data);
 
-			localizationData = new LocalizationData(jsonData);
-			localizationData.SaveLocalizationDataToJSON();
-
+				localizationData = new LocalizationData(jsonData);
+				localizationData.SaveLocalizationDataToJSON();
+			}
+			else if (extension == AvailableExtensions.xml)
+			{
+				XmlDocument xmlDocument = new XmlDocument();
+				xmlDocument.LoadXml(data);
+				localizationData = new LocalizationData(xmlDocument);
+			}
 			LoadLanguage("pl");
 		}
 		else

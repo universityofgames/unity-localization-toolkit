@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -333,8 +336,40 @@ public class LocalizationWindowEditor : EditorWindow {
 		string filePath = EditorUtility.SaveFilePanel("Save localization data file", Application.streamingAssetsPath, "", extension.ToString().ToLower());
 		if (!string.IsNullOrEmpty(filePath))
 		{
-			string dataAsJson = localizationData.SaveLocalizationDataToJSON().ToString();
-			File.WriteAllText(filePath, dataAsJson);
+			if (extension == AvailableExtensions.json)
+			{
+				SaveJSONFile(filePath);
+			}
+			else if (extension == AvailableExtensions.xml)
+			{
+				SaveXMLFile(filePath);
+			}
+		}
+	}
+
+	private void SaveJSONFile(string filePath) {
+		string data = localizationData.SaveLocalizationDataToJSON().ToString();
+		File.WriteAllText(filePath, data);
+	}
+
+	private void SaveXMLFile(string filePath) {
+		XDocument xml = localizationData.SaveLocalizationDataToXML();
+		XmlWriterSettings settings = new XmlWriterSettings
+		{
+			Encoding = Encoding.UTF8,
+			ConformanceLevel = ConformanceLevel.Document,
+			OmitXmlDeclaration = false,
+			CloseOutput = true,
+			Indent = true,
+			IndentChars = "  ",
+			NewLineHandling = NewLineHandling.Replace
+		};
+
+		using (StreamWriter sw = File.CreateText(filePath))
+		using (XmlWriter writer = XmlWriter.Create(sw, settings))
+		{
+			xml.WriteTo(writer);
+			writer.Close();
 		}
 	}
 
