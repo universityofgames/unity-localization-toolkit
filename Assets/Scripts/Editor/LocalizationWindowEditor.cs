@@ -326,10 +326,25 @@ public class LocalizationWindowEditor : EditorWindow {
 		{
 			ResetIndexes();
 			string data = File.ReadAllText(filePath);
-			JSONObject jsonData = new JSONObject(data);
-
-			localizationData = new LocalizationData(jsonData);
+			if (extension == AvailableExtensions.json)
+			{
+				LoadJSONFile(data);
+			}
+			else if (extension == AvailableExtensions.xml)
+			{
+				LoadXMLFile(data);
+			}
 		}
+	}
+
+	private void LoadJSONFile(string data) {
+		JSONObject jsonData = new JSONObject(data);
+		localizationData = new LocalizationData(jsonData);
+	}
+
+	private void LoadXMLFile(string data) {
+		XDocument xmlDocument = XDocument.Parse(data);
+		localizationData = new LocalizationData(xmlDocument);
 	}
 
 	private void SaveGameData() {
@@ -375,7 +390,7 @@ public class LocalizationWindowEditor : EditorWindow {
 
 	private void CreateNewData() {
 		ResetIndexes();
-		localizationData = new LocalizationData();
+		localizationData = new LocalizationData(defaultLangName, defaultKeyName);
 	}
 
 	private void ResetIndexes() {

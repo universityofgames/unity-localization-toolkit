@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using System.Xml.Linq;
 using UnityEngine;
 
 public enum AvailableExtensions { json, xml };
@@ -53,8 +54,7 @@ public class LocalizationManager : MonoBehaviour {
 			}
 			else if (extension == AvailableExtensions.xml)
 			{
-				XmlDocument xmlDocument = new XmlDocument();
-				xmlDocument.LoadXml(data);
+				XDocument xmlDocument = XDocument.Parse(data);
 				localizationData = new LocalizationData(xmlDocument);
 			}
 			LoadLanguage("pl");
@@ -89,15 +89,19 @@ public class LocalizationManager : MonoBehaviour {
 	}
 
 	public string[] GetAvailableLanguages() {
-		if (localizationData == null)
+		if (IsDataEmpty())
 			return null;
 
 		return new List<string>(localizationData.languages.Keys).ToArray();
 	}
 
 	public string[] GetKeys() {
-		if (localizationData == null)
+		if (IsDataEmpty())
 			return null;
 		return new List<string>(localizationData.languages[defaultLanguage].Keys).ToArray();
+	}
+
+	private bool IsDataEmpty() {
+		return localizationData == null || localizationData.languages == null;
 	}
 }
