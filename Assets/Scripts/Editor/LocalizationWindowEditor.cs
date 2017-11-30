@@ -192,7 +192,14 @@ public class LocalizationWindowEditor : EditorWindow {
 
 			if (GUILayout.Button("-", GUILayout.Width(removeButtonWidth)))
 			{
-				keysToRemove.Add(key);
+				if (localizationKeys.Count > 1)
+				{
+					keysToRemove.Add(key);
+				}
+				else
+				{
+					Debug.LogError("Translation needs at least one key.");
+				}
 			}
 			GUILayout.EndHorizontal();
 			elementID++;
