@@ -39,6 +39,7 @@ public class LocalizationWindowEditor : EditorWindow {
 			float spacePerLabel = (position.width - removeButtonWidth - fromRightOffset) / labelsCount;
 			languageNamesToFilter = new List<string>(localizationData.languages.Keys).ToArray();
 			availableLanguagesToAdd = ExcludeAlreadyImplementedLanguagesFromDefaultLanguagesList();
+
 			filterKeyIndex = EditorGUILayout.Popup("Select Language", filterKeyIndex, languageNamesToFilter, GUILayout.MaxWidth(enumWidth));
 
 			DrawLabels(spacePerLabel);
@@ -55,7 +56,11 @@ public class LocalizationWindowEditor : EditorWindow {
 			{
 				AddNewLanguage();
 			}
-			selectedLanguageIndex = EditorGUILayout.Popup("Language", selectedLanguageIndex, availableLanguagesToAdd, GUILayout.MaxWidth(enumWidth));
+
+			if (selectedLanguageIndex >= availableLanguagesToAdd.Length && availableLanguagesToAdd.Length > 0)
+			{
+				selectedLanguageIndex = 0;
+			}
 
 			GUILayout.EndHorizontal();
 			if (GUILayout.Button("Remove selected language", GUILayout.Width(buttonWidth)))
