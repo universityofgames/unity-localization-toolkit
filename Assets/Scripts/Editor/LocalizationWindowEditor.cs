@@ -13,7 +13,6 @@ public class LocalizationWindowEditor : EditorWindow {
 	private float removeButtonWidth = 50;
 	private float minTextFieldWidth = 300;
 	private float fromRightOffset = 50;
-	private Vector2 maxWindowSize = new Vector2(1024, 600);
 	private Vector2 scrollPos;
 	private string lastEditedElement;
 	private bool needsRefocus;
@@ -40,16 +39,14 @@ public class LocalizationWindowEditor : EditorWindow {
 			languageNamesToFilter = new List<string>(localizationData.languages.Keys).ToArray();
 			availableLanguagesToAdd = ExcludeAlreadyImplementedLanguagesFromDefaultLanguagesList();
 
+			GUILayout.Space(10);
+
+			GUILayout.BeginHorizontal();
+			GUILayout.BeginVertical(GUILayout.Width(spacePerLabel));
 			filterKeyIndex = EditorGUILayout.Popup("Select Language", filterKeyIndex, languageNamesToFilter, GUILayout.MaxWidth(enumWidth));
+			GUILayout.EndVertical();
 
-			DrawLabels(spacePerLabel);
-			DrawLocalizationGrid(spacePerLabel);
-			GUILayout.Space(25);
-
-			if (GUILayout.Button("Add new entry", GUILayout.Width(buttonWidth)))
-			{
-				AddNewEntry();
-			}
+			GUILayout.BeginVertical(GUILayout.Width(spacePerLabel));
 
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Add new language", GUILayout.Width(buttonWidth)))
@@ -61,12 +58,28 @@ public class LocalizationWindowEditor : EditorWindow {
 			{
 				selectedLanguageIndex = 0;
 			}
+			selectedLanguageIndex = EditorGUILayout.Popup("Language", selectedLanguageIndex, availableLanguagesToAdd, GUILayout.MaxWidth(enumWidth));
 
 			GUILayout.EndHorizontal();
+
 			if (GUILayout.Button("Remove selected language", GUILayout.Width(buttonWidth)))
 			{
 				RemoveSelectedLanguage();
 			}
+
+			if (GUILayout.Button("Add new entry", GUILayout.Width(buttonWidth)))
+			{
+				AddNewEntry();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.EndHorizontal();
+
+			GUILayout.Space(25);
+
+			DrawLabels(spacePerLabel);
+			DrawLocalizationGrid(spacePerLabel);
+
 			GUILayout.Space(25);
 
 			if (GUILayout.Button("Save data"))
