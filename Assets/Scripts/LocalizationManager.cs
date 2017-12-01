@@ -111,7 +111,7 @@ public class LocalizationManager : MonoBehaviour {
 
 	public string GetLocalizedValue(string key) {
 		string result = missingTextString;
-		if (languageTranslations.ContainsKey(key))
+		if (languageTranslations != null && languageTranslations.ContainsKey(key))
 		{
 			result = languageTranslations[key];
 		}
