@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -33,6 +34,8 @@ public class LocalizationWindowEditor : EditorWindow {
 	private int selectedLanguageIndex = 0;
 	private AvailableExtensions extension;
 
+	private string fileURL = "";
+
 	[MenuItem("Window/Localization Editor")]
 	private static void Init() {
 		GetWindow<LocalizationWindowEditor>("Localization editor").Show();
@@ -40,14 +43,42 @@ public class LocalizationWindowEditor : EditorWindow {
 
 	private void OnGUI() {
 		GUILayout.Space(10);
+		EditorGUILayout.LabelField("Load from web: ");
+		GUILayout.BeginHorizontal();
+		{
+			fileURL = EditorGUILayout.TextField("File URL: ", fileURL);
+			if (GUILayout.Button("Load from web", GUILayout.Width(buttonWidth)))
+			{
+				LoadFromWeb();
+			}
+		}
+		GUILayout.EndHorizontal();
+		GUILayout.Space(10);
+		EditorGUILayout.LabelField("Load from local: ");
 		extension = (AvailableExtensions)EditorGUILayout.EnumPopup("File extension", extension);
+		if (GUILayout.Button("Load data"))
+		{
+			LoadGameData();
+		}
+
+		if (GUILayout.Button("Create new data"))
+		{
+			CreateNewData();
+		}
 
 		if (localizationData != null)
 		{
+			if (GUILayout.Button("Save data"))
+			{
+				SaveGameData();
+			}
+
+			GUILayout.Space(15);
+
 			float spacePerLabel = (position.width - removeButtonWidth - fromRightOffset) / labelsCount;
 			languageNamesToFilter = new List<string>(localizationData.languages.Keys).ToArray();
-
 			GUILayout.Space(10);
+
 			GUILayout.BeginHorizontal();
 			{
 				GUILayout.BeginVertical(GUILayout.Width(spacePerLabel));
@@ -75,29 +106,49 @@ public class LocalizationWindowEditor : EditorWindow {
 
 			DrawLabels(spacePerLabel);
 			DrawLocalizationGrid(spacePerLabel);
+		}
 
-			GUILayout.Space(15);
+		GUILayout.Space(10);
+	}
 
-			if (GUILayout.Button("Save data"))
-			{
-				SaveGameData();
-			}
+	private void LoadFromWeb() {
+		string ext = GetExtensionFromUrl();
+		if (ext == "")
+		{
+			Debug.LogError("File needs .xml or .json extension");
 		}
 		else
 		{
-			GUILayout.Space(15);
+			using (var wc = new WebClient())
+			{
+				AvailableExtensions extension = (AvailableExtensions)Enum.Parse(typeof(AvailableExtensions), ext);
+				string data = wc.DownloadString(fileURL).Trim();
+				if (data != "")
+				{
+					ResetIndexes();
+					if (extension == AvailableExtensions.json)
+					{
+						LoadJSONFile(data);
+					}
+					else if (extension == AvailableExtensions.xml)
+					{
+						LoadXMLFile(data);
+					}
+				}
+			}
 		}
+	}
 
-		if (GUILayout.Button("Load data"))
+	private string GetExtensionFromUrl() {
+		string[] separatedURL = fileURL.Split('.');
+		if (separatedURL.Length > 0)
 		{
-			LoadGameData();
-		}
+			string lastSegment = separatedURL[separatedURL.Length - 1].ToLower();
 
-		if (GUILayout.Button("Create new data"))
-		{
-			CreateNewData();
+			if (lastSegment == AvailableExtensions.json.ToString().ToLower() || lastSegment == AvailableExtensions.xml.ToString().ToLower())
+				return lastSegment;
 		}
-		GUILayout.Space(10);
+		return "";
 	}
 
 	private void DrawLanguageSelection() {
