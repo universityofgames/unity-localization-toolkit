@@ -14,12 +14,14 @@ public class LocalizationManager : MonoBehaviour {
 
 	public static event Action OnLanguageChanged;
 
+	public string fileURL = "";
 	public string fileName;
 	public AvailableExtensions extension;
 
 	private LocalizationData localizationData;
 
 	private Dictionary<string, string> languageTranslations;
+
 	private string missingTextString = "Localized text not found";
 
 	private string defaultLanguage = "default";
@@ -40,29 +42,57 @@ public class LocalizationManager : MonoBehaviour {
 		InitLocalizationData();
 	}
 
-	public void InitLocalizationData() {
-		string filePath = Path.Combine(Application.streamingAssetsPath, fileName + "." + extension.ToString().ToLower());
-		if (File.Exists(filePath))
+	public void LoadFromWeb() {
+		string ext = WebLoader.GetExtensionFromUrl(fileURL);
+		if (ext == "")
 		{
-			string data = File.ReadAllText(filePath);
-			if (extension == AvailableExtensions.json)
-			{
-				JSONObject jsonData = new JSONObject(data);
-
-				localizationData = new LocalizationData(jsonData);
-				localizationData.SaveLocalizationDataToJSON();
-			}
-			else if (extension == AvailableExtensions.xml)
-			{
-				XDocument xmlDocument = XDocument.Parse(data);
-				localizationData = new LocalizationData(xmlDocument);
-			}
-			LoadLanguage("pl");
+			Debug.LogError("File needs .xml or .json extension");
 		}
 		else
 		{
-			Debug.LogError("Cannot find file!");
+			string data = WebLoader.LoadStringFileFromWeb(fileURL);
+			if (data != "")
+			{
+				AvailableExtensions extension = (AvailableExtensions)Enum.Parse(typeof(AvailableExtensions), ext);
+				localizationData = LoadLocalizationData(data, extension);
+				LoadLanguage("pl");
+			}
 		}
+	}
+
+	public void InitLocalizationData() {
+		LoadFromWeb();
+		if (localizationData == null)
+		{
+			string filePath = Path.Combine(Application.streamingAssetsPath, fileName + "." + extension.ToString().ToLower());
+			if (File.Exists(filePath))
+			{
+				string data = File.ReadAllText(filePath);
+				localizationData = LoadLocalizationData(data, extension);
+				LoadLanguage("pl");
+			}
+			else
+			{
+				Debug.LogError("Cannot find file!");
+			}
+		}
+	}
+
+	private LocalizationData LoadLocalizationData(string rawData, AvailableExtensions extension) {
+		LocalizationData localizationData = null;
+		if (extension == AvailableExtensions.json)
+		{
+			JSONObject jsonData = new JSONObject(rawData);
+
+			localizationData = new LocalizationData(jsonData);
+			localizationData.SaveLocalizationDataToJSON();
+		}
+		else if (extension == AvailableExtensions.xml)
+		{
+			XDocument xmlDocument = XDocument.Parse(rawData);
+			localizationData = new LocalizationData(xmlDocument);
+		}
+		return localizationData;
 	}
 
 	public void LoadLanguage(string language) {

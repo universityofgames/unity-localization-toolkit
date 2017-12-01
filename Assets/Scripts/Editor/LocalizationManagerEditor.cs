@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -9,13 +10,18 @@ public class LocalizationManagerEditor : Editor {
 
 	public override void OnInspectorGUI() {
 		LocalizationManager localizationManager = (LocalizationManager)target;
+		localizationManager.fileURL = EditorGUILayout.TextField("File URL: ", localizationManager.fileURL);
+		if (GUILayout.Button("Load from web"))
+		{
+			localizationManager.LoadFromWeb();
+		}
 
 		GUILayout.BeginHorizontal();
 		localizationManager.fileName = EditorGUILayout.TextField("File name", localizationManager.fileName);
 		localizationManager.extension = (AvailableExtensions)EditorGUILayout.EnumPopup(localizationManager.extension);
 		GUILayout.EndHorizontal();
 
-		if (GUILayout.Button("Load file"))
+		if (GUILayout.Button("Load local file"))
 			localizationManager.InitLocalizationData();
 
 		string[] languagesToShow = localizationManager.GetAvailableLanguages();

@@ -112,7 +112,7 @@ public class LocalizationWindowEditor : EditorWindow {
 	}
 
 	private void LoadFromWeb() {
-		string ext = GetExtensionFromUrl();
+		string ext = WebLoader.GetExtensionFromUrl(fileURL);
 		if (ext == "")
 		{
 			Debug.LogError("File needs .xml or .json extension");
@@ -134,18 +134,6 @@ public class LocalizationWindowEditor : EditorWindow {
 				}
 			}
 		}
-	}
-
-	private string GetExtensionFromUrl() {
-		string[] separatedURL = fileURL.Split('.');
-		if (separatedURL.Length > 0)
-		{
-			string lastSegment = separatedURL[separatedURL.Length - 1].ToLower();
-
-			if (lastSegment == AvailableExtensions.json.ToString().ToLower() || lastSegment == AvailableExtensions.xml.ToString().ToLower())
-				return lastSegment;
-		}
-		return "";
 	}
 
 	private void DrawLanguageSelection() {
