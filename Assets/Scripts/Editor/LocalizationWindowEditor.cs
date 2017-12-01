@@ -119,21 +119,18 @@ public class LocalizationWindowEditor : EditorWindow {
 		}
 		else
 		{
-			using (var wc = new WebClient())
+			string data = WebLoader.LoadStringFileFromWeb(fileURL);
+			if (data != "")
 			{
 				AvailableExtensions extension = (AvailableExtensions)Enum.Parse(typeof(AvailableExtensions), ext);
-				string data = wc.DownloadString(fileURL).Trim();
-				if (data != "")
+				ResetIndexes();
+				if (extension == AvailableExtensions.json)
 				{
-					ResetIndexes();
-					if (extension == AvailableExtensions.json)
-					{
-						LoadJSONFile(data);
-					}
-					else if (extension == AvailableExtensions.xml)
-					{
-						LoadXMLFile(data);
-					}
+					LoadJSONFile(data);
+				}
+				else if (extension == AvailableExtensions.xml)
+				{
+					LoadXMLFile(data);
 				}
 			}
 		}
