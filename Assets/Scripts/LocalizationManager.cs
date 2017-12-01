@@ -58,7 +58,7 @@ public class LocalizationManager : MonoBehaviour {
 			{
 				AvailableExtensions extension = (AvailableExtensions)Enum.Parse(typeof(AvailableExtensions), ext);
 				localizationData = LoadLocalizationData(data, extension);
-				LoadLanguage("pl");
+				LoadLanguage(defaultLanguage);
 			}
 		}
 	}
