@@ -5,6 +5,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum AvailableExtensions { json, xml };
 
@@ -14,6 +15,7 @@ public class LocalizationManager : MonoBehaviour {
 
 	public static event Action OnLanguageChanged;
 
+	public bool testMode = false;
 	public string fileURL = "";
 	public string fileName;
 	public AvailableExtensions extension;
@@ -25,8 +27,8 @@ public class LocalizationManager : MonoBehaviour {
 	private string missingTextString = "Localized text not found";
 
 	private string defaultLanguage = "default";
+	private Dropdown dropdown;
 
-	[SerializeField]
 	private string selectedLanguage;
 
 	private void Awake() {
@@ -40,6 +42,7 @@ public class LocalizationManager : MonoBehaviour {
 		}
 
 		InitLocalizationData();
+		InitLanguageSelection();
 	}
 
 	public void LoadFromWeb() {
@@ -69,7 +72,7 @@ public class LocalizationManager : MonoBehaviour {
 			{
 				string data = File.ReadAllText(filePath);
 				localizationData = LoadLocalizationData(data, extension);
-				LoadLanguage("pl");
+				LoadLanguage(defaultLanguage);
 			}
 			else
 			{
@@ -133,5 +136,36 @@ public class LocalizationManager : MonoBehaviour {
 
 	private bool IsDataEmpty() {
 		return localizationData == null || localizationData.languages == null;
+	}
+
+	private void InitLanguageSelection() {
+		dropdown = FindObjectOfType<Dropdown>();
+		if (dropdown)
+		{
+			dropdown.options.Clear();
+			if (!testMode)
+			{
+				dropdown.gameObject.SetActive(false);
+			}
+			else
+			{
+				List<Dropdown.OptionData> options = new List<Dropdown.OptionData>();
+				string[] languages = GetAvailableLanguages();
+				if (languages != null)
+				{
+					for (int i = 0; i < languages.Length; i++)
+					{
+						options.Add(new Dropdown.OptionData(languages[i]));
+					}
+					dropdown.AddOptions(options);
+					dropdown.onValueChanged.AddListener(ChangeTestLanguage);
+				}
+			}
+		}
+	}
+
+	private void ChangeTestLanguage(int langIndex) {
+		string lang = dropdown.options[langIndex].text;
+		LoadLanguage(lang);
 	}
 }

@@ -10,6 +10,7 @@ public class LocalizationManagerEditor : Editor {
 
 	public override void OnInspectorGUI() {
 		LocalizationManager localizationManager = (LocalizationManager)target;
+		localizationManager.testMode = EditorGUILayout.Toggle("TEST MODE:", localizationManager.testMode);
 		localizationManager.fileURL = EditorGUILayout.TextField("File URL: ", localizationManager.fileURL);
 		if (GUILayout.Button("Load from web"))
 		{
