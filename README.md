@@ -5,8 +5,8 @@
 
 * * *
 
-### Need Unity package?
-You can also find our project on the Unity Asset Store: <b>[Progress Bar Toolkit](https://assetstore.unity.com/packages/tools/gui/progress-bar-kit-87620)</b>
+### Check our others Unity package?
+You can also find our other solutions on the Unity Asset Store: <b>[here](https://assetstore.unity.com/publishers/25633)</b>
 
 * * *
 
