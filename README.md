@@ -5,7 +5,7 @@
 
 * * *
 
-### Check our others Unity package?
+### Check our others Unity package
 You can also find our other solutions on the Unity Asset Store: <b>[here](https://assetstore.unity.com/publishers/25633)</b>
 
 * * *
