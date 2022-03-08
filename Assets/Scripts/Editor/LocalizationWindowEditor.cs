@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using UnityEditor;
 using UnityEngine;
+using Newtonsoft.Json;
 
 public class LocalizationWindowEditor : EditorWindow {
 	public LocalizationData localizationData;
@@ -380,8 +379,9 @@ public class LocalizationWindowEditor : EditorWindow {
 		}
 	}
 
-	private void LoadJSONFile(string data) {
-		JSONObject jsonData = new JSONObject(data);
+	private void LoadJSONFile(string data)
+	{
+		Dictionary<string, Dictionary<string, string>> jsonData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(data);
 		localizationData = new LocalizationData(jsonData);
 	}
 

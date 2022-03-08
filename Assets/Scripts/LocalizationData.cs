@@ -8,7 +8,7 @@ using System.Linq;
 
 [System.Serializable]
 public class LocalizationData {
-	public Dictionary<string, Dictionary<string, string>> languages;
+	public Dictionary<string, Dictionary<string, string>> languages = new Dictionary<string, Dictionary<string, string>>();
 	private string xmlRootNode = "translations";
 
 	public LocalizationData(string defaultLanguage, string defaultKey) {
@@ -17,27 +17,23 @@ public class LocalizationData {
 		languages[defaultLanguage].Add(defaultKey, "");
 	}
 
-	public LocalizationData(JSONObject jsonData) {
-		languages = new Dictionary<string, Dictionary<string, string>>();
+	public LocalizationData(Dictionary<string, Dictionary<string, string>> jsonData) {
+		languages.Clear();
 		LoadObjectFromJSON(jsonData);
 	}
 
 	public LocalizationData(XDocument xmlDocument) {
-		languages = new Dictionary<string, Dictionary<string, string>>();
+		languages.Clear();
 		LoadObjectFromXML(xmlDocument);
 	}
 
-	private void LoadObjectFromJSON(JSONObject jsonData) {
-		for (int i = 0; i < jsonData.Count; i++)
+	private void LoadObjectFromJSON(Dictionary<string, Dictionary<string, string>> jsonData) {
+		foreach (var langs in jsonData)
 		{
-			string language = jsonData.keys[i];
-			JSONObject languageJSON = jsonData[language];
-
-			languages.Add(language, new Dictionary<string, string>());
-			for (int j = 0; j < languageJSON.Count; j++)
+			languages.Add(langs.Key, new Dictionary<string, string>());
+			foreach (var item in langs.Value)
 			{
-				string key = languageJSON.keys[j];
-				languages[language].Add(key, languageJSON[key].str);
+				languages[langs.Key].Add(item.Key, item.Value);
 			}
 		}
 	}
@@ -55,14 +51,12 @@ public class LocalizationData {
 		}
 	}
 
-	public JSONObject SaveLocalizationDataToJSON() {
-		JSONObject data = new JSONObject();
-		foreach (var langs in languages)
-		{
-			JSONObject dict = new JSONObject(langs.Value);
-			data.AddField(langs.Key, dict);
+	public Dictionary<string, Dictionary<string, string>> SaveLocalizationDataToJSON() {
+		Dictionary<string, Dictionary<string, string>> jsonData = new Dictionary<string, Dictionary<string, string>>();
+		foreach (var langs in languages) {
+			jsonData.Add(langs.Key, langs.Value);
 		}
-		return data;
+		return jsonData;
 	}
 
 	public XDocument SaveLocalizationDataToXML() {

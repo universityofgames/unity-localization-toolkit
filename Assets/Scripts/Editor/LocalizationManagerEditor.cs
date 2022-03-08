@@ -17,14 +17,20 @@ public class LocalizationManagerEditor : Editor {
 			localizationManager.LoadFromWeb();
 		}
 
+		GUILayout.Space(20);	
+		
 		GUILayout.BeginHorizontal();
 		localizationManager.fileName = EditorGUILayout.TextField("File name", localizationManager.fileName);
 		localizationManager.extension = (AvailableExtensions)EditorGUILayout.EnumPopup(localizationManager.extension);
 		GUILayout.EndHorizontal();
 
 		if (GUILayout.Button("Load local file"))
+		{
 			localizationManager.InitLocalizationData();
+		}
 
+		GUILayout.Space(20);	
+		
 		string[] languagesToShow = localizationManager.GetAvailableLanguages();
 		if (languagesToShow != null)
 		{

@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Xml;
 using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using Newtonsoft.Json;
 
 public enum AvailableExtensions { json, xml };
 
@@ -64,20 +63,16 @@ public class LocalizationManager : MonoBehaviour {
 	}
 
 	public void InitLocalizationData() {
-		LoadFromWeb();
-		if (localizationData == null)
+		string filePath = Path.Combine(Application.streamingAssetsPath, fileName + "." + extension.ToString().ToLower());
+		if (File.Exists(filePath))
 		{
-			string filePath = Path.Combine(Application.streamingAssetsPath, fileName + "." + extension.ToString().ToLower());
-			if (File.Exists(filePath))
-			{
-				string data = File.ReadAllText(filePath);
-				localizationData = LoadLocalizationData(data, extension);
-				LoadLanguage(defaultLanguage);
-			}
-			else
-			{
-				Debug.LogError("Cannot find file!");
-			}
+			string data = File.ReadAllText(filePath);
+			localizationData = LoadLocalizationData(data, extension);
+			LoadLanguage(defaultLanguage);
+		}
+		else
+		{
+			Debug.LogError("Cannot find file!");
 		}
 	}
 
@@ -85,8 +80,7 @@ public class LocalizationManager : MonoBehaviour {
 		LocalizationData localizationData = null;
 		if (extension == AvailableExtensions.json)
 		{
-			JSONObject jsonData = new JSONObject(rawData);
-
+			Dictionary<string, Dictionary<string, string>> jsonData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(rawData);
 			localizationData = new LocalizationData(jsonData);
 			localizationData.SaveLocalizationDataToJSON();
 		}
@@ -107,6 +101,7 @@ public class LocalizationManager : MonoBehaviour {
 		{
 			selectedLanguage = defaultLanguage;
 		}
+		
 		languageTranslations = localizationData.languages[selectedLanguage];
 		if (OnLanguageChanged != null)
 			OnLanguageChanged();

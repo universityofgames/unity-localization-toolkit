@@ -6,10 +6,10 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Text))]
 public class LocalizedText : MonoBehaviour {
 	public string key;
-	private Text myText;
+	private Text _myText;
 
 	private void Start() {
-		myText = GetComponent<Text>();
+		_myText = GetComponent<Text>();
 		RefreshText();
 		LocalizationManager.OnLanguageChanged += RefreshText;
 	}
@@ -19,6 +19,6 @@ public class LocalizedText : MonoBehaviour {
 	}
 
 	private void RefreshText() {
-		myText.text = LocalizationManager.instance.GetLocalizedValue(key);
+		_myText.text = LocalizationManager.instance.GetLocalizedValue(key);
 	}
 }
