@@ -1,3 +1,5 @@
+![cover_banner copy](https://user-images.githubusercontent.com/10097678/163688958-3e3251eb-f506-4038-b62f-8b0e0b9663c6.png)
+
 # Localization toolkit for Unity 3D
 
 Quickly add multi-language support to your games using our localization toolkit. This lightweight asset allows you to localize any text. Easly load CSV or XML files into your game!
