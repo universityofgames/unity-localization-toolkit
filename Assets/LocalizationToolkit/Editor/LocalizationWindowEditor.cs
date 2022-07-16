@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 using Formatting = Newtonsoft.Json.Formatting;
 
 public class LocalizationWindowEditor : EditorWindow {
-	public LocalizationData localizationData;
+	public LocalizationData localizationData = new LocalizationData();
 	private string defaultLangName = "default";
 	private string defaultKeyName = "NEW_KEY";
 	private float removeButtonWidth = 50;
@@ -66,11 +66,11 @@ public class LocalizationWindowEditor : EditorWindow {
 			CreateNewData();
 		}
 
-		if (localizationData != null && localizationData.languages != null)
+		if (localizationData.languages.Count > 0)
 		{
 			if (GUILayout.Button("Save data"))
 			{
-				SaveGameData();
+				SaveToFile();
 			}
 
 			GUILayout.Space(15);
@@ -381,8 +381,7 @@ public class LocalizationWindowEditor : EditorWindow {
 
 	private void LoadJSONFile(string data)
 	{
-		Dictionary<string, Dictionary<string, string>> objData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(data);
-		localizationData = new LocalizationData(objData);
+		localizationData= JsonConvert.DeserializeObject<LocalizationData>(data);
 	}
 	
 	private void LoadXMLFile(string data) {
@@ -390,24 +389,26 @@ public class LocalizationWindowEditor : EditorWindow {
 		localizationData = new LocalizationData(xmlDocument);
 	}
 
-	private void SaveGameData() {
+	private void SaveToFile() {
 		string filePath = EditorUtility.SaveFilePanel("Save localization data file", Application.streamingAssetsPath, "", extension.ToString().ToLower());
 		if (!string.IsNullOrEmpty(filePath))
 		{
-			if (extension == AvailableExtensions.json)
+			switch (extension)
 			{
-				SaveJSONFile(filePath);
-			}
-			else if (extension == AvailableExtensions.xml)
-			{
-				SaveXMLFile(filePath);
+				case AvailableExtensions.json:
+					SaveJSONFile(filePath);
+					break;
+				case AvailableExtensions.xml:
+					SaveXMLFile(filePath);
+					break;
+				
 			}
 		}
 	}
 
 	private void SaveJSONFile(string filePath)
 	{
-		var json = JsonConvert.SerializeObject(localizationData.languages, Formatting.Indented);
+		var json = JsonConvert.SerializeObject(localizationData, Formatting.Indented);
 		File.WriteAllText(filePath, json);
 	}
 

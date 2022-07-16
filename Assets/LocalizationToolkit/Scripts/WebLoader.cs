@@ -4,14 +4,14 @@ using UnityEngine;
 
 public static class WebLoader {
 	/// <summary>This method fetch file from web</summary>
-	/// <param name="fileUrl">URL to file</param>
-	public static string LoadStringFileFromWeb(string fileURL) {
+	/// <param name="url">URL to file</param>
+	public static string LoadStringFileFromWeb(string url) {
 		string data = "";
 		try
 		{
 			using (var wc = new WebClient())
 			{
-				data = wc.DownloadString(fileURL).Trim();
+				data = wc.DownloadString(url).Trim();
 			}
 		}
 		catch (Exception e)
@@ -24,8 +24,8 @@ public static class WebLoader {
 
 	/// <summary>This method fetch extension from url file</summary>
 	/// <param name="fileUrl">URL to file</param>
-	public static string GetExtensionFromUrl(string fileURL) {
-		string[] separatedURL = fileURL.Split('.');
+	public static string GetExtensionFromUrl(string url) {
+		string[] separatedURL = url.Split('.');
 		if (separatedURL.Length > 0)
 		{
 			string lastSegment = separatedURL[separatedURL.Length - 1].ToLower();

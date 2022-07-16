@@ -3,11 +3,12 @@ using UnityEngine.UI;
 
 [RequireComponent(typeof(Text))]
 public class LocalizedText : MonoBehaviour {
+	// key by which the translation is searched for
 	public string key;
-	private Text _myText;
+	private Text _textComponent;
 
 	private void Awake() {
-		_myText = GetComponent<Text>();
+		_textComponent = GetComponent<Text>();
 		RefreshText();
 		LocalizationManager.OnLanguageChanged += RefreshText;
 	}
@@ -16,8 +17,8 @@ public class LocalizedText : MonoBehaviour {
 		LocalizationManager.OnLanguageChanged -= RefreshText;
 	}
 
-	/// <summary>Refresh text</summary>
+	/// <summary>Refresh text component</summary>
 	private void RefreshText() {
-		_myText.text = LocalizationManager.instance.GetLocalizedValue(key);
+		_textComponent.text = LocalizationManager.instance.GetLocalizedValue(key);
 	}
 }

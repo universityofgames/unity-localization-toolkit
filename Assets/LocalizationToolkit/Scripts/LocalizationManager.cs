@@ -1,36 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 using UnityEngine;
 using Newtonsoft.Json;
+using Formatting = Newtonsoft.Json.Formatting;
 
 public enum AvailableExtensions { json, xml };
 
 [ExecuteInEditMode]
-public class LocalizationManager : MonoBehaviour {
-	public static LocalizationManager instance;
+public class LocalizationManager : MonoBehaviourSingleton<LocalizationManager> { 
 	public static event Action OnLanguageChanged;
 	
 	public string fileURL = "";
-	public string fileName;
+	public string fileName = "";
 	public AvailableExtensions extension;
 
-	private LocalizationData _currentLocalizationData;
+	private LocalizationData currentLocalizationData;
 	private Dictionary<string, string> _currentlanguageTranslations;
 	private string _missingTextString = "Localized text not found";
 	private string _defaultLanguage = "default";
 	private string _selectedLanguage = "";
 
-	private void Awake() {
-		if (instance == null)
-		{
-			instance = this;
-		}
-		else if (instance != this)
-		{
-			Destroy(gameObject);
-		}
+	protected override void Awake() {
+		base.Awake();
 
 		// Auto load
 		if (fileURL.Trim().Length > 0)
@@ -39,24 +34,24 @@ public class LocalizationManager : MonoBehaviour {
 		}
 		else if (fileName.Trim().Length > 0)
 		{
-			LoadFromFile(fileName, extension);
+			string filepath = Path.Combine(Application.streamingAssetsPath, fileName + "." + extension.ToString().ToLower());
+			LoadFromFile(filepath, extension);
 		}
 	}
 	
 	/// <summary>Load file from local</summary>
-	/// <param name="filename">filename</param>
+	/// <param name="filepath">filepath</param>
 	/// /// <param name="extension">extension</param>
-	public void LoadFromFile(string filename, AvailableExtensions extension) {
-		string filePath = Path.Combine(Application.streamingAssetsPath, fileName + "." + extension.ToString().ToLower());
+	public void LoadFromFile(string filepath, AvailableExtensions extension) {
 		try
 		{
-			string rawData = File.ReadAllText(filePath);
-			_currentLocalizationData = LoadLocalizationData(rawData, extension);
+			string rawData = File.ReadAllText(filepath);
+			currentLocalizationData = LoadLocalizationData(rawData, extension);
 			LoadLanguage(_defaultLanguage);
 		}
 		catch (Exception e)
 		{
-			Debug.LogError("Cannot find file at: " + filePath);
+			Debug.LogError("Cannot find file at: " + filepath);
 		}
 	}
 	
@@ -75,7 +70,7 @@ public class LocalizationManager : MonoBehaviour {
 		}
 		
 		AvailableExtensions currentExtension = (AvailableExtensions)Enum.Parse(typeof(AvailableExtensions), ext);
-		_currentLocalizationData = LoadLocalizationData(data, currentExtension);
+		currentLocalizationData = LoadLocalizationData(data, currentExtension);
 		LoadLanguage(_defaultLanguage);
 	}
 
@@ -87,9 +82,8 @@ public class LocalizationManager : MonoBehaviour {
 		switch (extension)
 		{
 			case AvailableExtensions.json:
-				Dictionary<string, Dictionary<string, string>> jsonData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(rawData);
-				localizationData = new LocalizationData(jsonData);
-				localizationData.SaveLocalizationDataToJSON();
+				localizationData = JsonConvert.DeserializeObject<LocalizationData>(rawData);
+
 				break;
 			case AvailableExtensions.xml:
 				XDocument xmlDocument = XDocument.Parse(rawData);
@@ -102,8 +96,8 @@ public class LocalizationManager : MonoBehaviour {
 	/// <summary>Load language Data</summary>
 	/// <param name="langKey">Language Key</param>
 	public void LoadLanguage(string langKey) {
-		_selectedLanguage = _currentLocalizationData.languages.ContainsKey(langKey) ? langKey : _defaultLanguage;
-		_currentlanguageTranslations = _currentLocalizationData.languages[_selectedLanguage];
+		_selectedLanguage = currentLocalizationData.languages.ContainsKey(langKey) ? langKey : _defaultLanguage;
+		_currentlanguageTranslations = currentLocalizationData.languages[_selectedLanguage];
 		if (OnLanguageChanged != null)
 			OnLanguageChanged();
 	}
@@ -127,18 +121,17 @@ public class LocalizationManager : MonoBehaviour {
 	public string[] GetAvailableLanguages() {
 		if (IsDataEmpty())
 			return null;
-
-		return new List<string>(_currentLocalizationData.languages.Keys).ToArray();
+		return new List<string>(currentLocalizationData.languages.Keys).ToArray();
 	}
 
 	/// <summary>Get All Keys</summary>
 	public string[] GetKeys() {
 		if (IsDataEmpty())
 			return null;
-		return new List<string>(_currentLocalizationData.languages[_defaultLanguage].Keys).ToArray();
+		return new List<string>(currentLocalizationData.languages[_defaultLanguage].Keys).ToArray();
 	}
 
 	private bool IsDataEmpty() {
-		return _currentLocalizationData == null || _currentLocalizationData.languages == null;
+		return currentLocalizationData == null || currentLocalizationData.languages == null;
 	}
 }

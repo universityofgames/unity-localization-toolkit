@@ -5,7 +5,7 @@ using System.Linq;
 [System.Serializable]
 public class LocalizationData
 {
-	public Dictionary<string, Dictionary<string, string>> languages;
+	public Dictionary<string, Dictionary<string, string>> languages = new Dictionary<string, Dictionary<string, string>>();
 	private string xmlRootNode = "translations";
 
 	public LocalizationData() {
