@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<translations>
+  <default>
+    <bye>Bye</bye>
+    <hello>Hello</hello>
+  </default>
+  <English>
+    <bye>Bye</bye>
+    <hello>Hello</hello>
+  </English>
+  <Polish>
+    <bye>Pa!</bye>
+    <hello>Cześć</hello>
+  </Polish>
+</translations>

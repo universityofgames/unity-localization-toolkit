@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(LocalizationManager))]
 public class LocalizationManagerEditor : Editor {
-	private int selectedIndex = 0;
+	private int _selectedIndex = 0;
 
 	public override void OnInspectorGUI() {
 		LocalizationManager localizationManager = (LocalizationManager)target;
-		localizationManager.testMode = EditorGUILayout.Toggle("TEST MODE:", localizationManager.testMode);
 		localizationManager.fileURL = EditorGUILayout.TextField("File URL: ", localizationManager.fileURL);
 		if (GUILayout.Button("Load from web"))
 		{
-			localizationManager.LoadFromWeb();
+			localizationManager.LoadFromWeb(localizationManager.fileURL);
 		}
 
 		GUILayout.Space(20);	
@@ -26,7 +22,7 @@ public class LocalizationManagerEditor : Editor {
 
 		if (GUILayout.Button("Load local file"))
 		{
-			localizationManager.InitLocalizationData();
+			localizationManager.LoadFromFile(localizationManager.fileName, localizationManager.extension);
 		}
 
 		GUILayout.Space(20);	
@@ -35,9 +31,9 @@ public class LocalizationManagerEditor : Editor {
 		if (languagesToShow != null)
 		{
 			GUILayout.Label("Select language");
-			selectedIndex = EditorGUILayout.Popup(selectedIndex, languagesToShow);
+			_selectedIndex = EditorGUILayout.Popup(_selectedIndex, languagesToShow);
 			if (GUILayout.Button("Load language"))
-				localizationManager.LoadLanguage(languagesToShow[selectedIndex]);
+				localizationManager.LoadLanguage(languagesToShow[_selectedIndex]);
 		}
 	}
 }

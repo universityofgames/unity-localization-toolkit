@@ -1,41 +1,31 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Xml;
+﻿using System.Collections.Generic;
 using System.Xml.Linq;
 using System.Linq;
 
 [System.Serializable]
-public class LocalizationData {
-	public Dictionary<string, Dictionary<string, string>> languages = new Dictionary<string, Dictionary<string, string>>();
+public class LocalizationData
+{
+	public Dictionary<string, Dictionary<string, string>> languages;
 	private string xmlRootNode = "translations";
 
+	public LocalizationData() {
+		languages = new Dictionary<string, Dictionary<string, string>>();
+	}
+	
 	public LocalizationData(string defaultLanguage, string defaultKey) {
 		languages = new Dictionary<string, Dictionary<string, string>>();
 		languages.Add(defaultLanguage, new Dictionary<string, string>());
 		languages[defaultLanguage].Add(defaultKey, "");
 	}
 
-	public LocalizationData(Dictionary<string, Dictionary<string, string>> jsonData) {
-		languages.Clear();
-		LoadObjectFromJSON(jsonData);
+	public LocalizationData(Dictionary<string, Dictionary<string, string>> jsonData)
+	{
+		languages = jsonData;
 	}
 
 	public LocalizationData(XDocument xmlDocument) {
-		languages.Clear();
+		languages = new Dictionary<string, Dictionary<string, string>>();
 		LoadObjectFromXML(xmlDocument);
-	}
-
-	private void LoadObjectFromJSON(Dictionary<string, Dictionary<string, string>> jsonData) {
-		foreach (var langs in jsonData)
-		{
-			languages.Add(langs.Key, new Dictionary<string, string>());
-			foreach (var item in langs.Value)
-			{
-				languages[langs.Key].Add(item.Key, item.Value);
-			}
-		}
 	}
 
 	private void LoadObjectFromXML(XDocument xmlDocument) {

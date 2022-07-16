@@ -1,1 +1,16 @@
-{"default":{"hello":"Hallo","bye":"bye"},"en":{"hello":"Hallo","bye":"bye"},"pl":{"hello":"Witaj","bye":"zegnaj"}}
+{
+  "languages": {
+    "default": {
+      "bye": "Bye",
+      "hello": "Hello"
+    },
+    "English": {
+      "bye": "Bye",
+      "hello": "Hello"
+    },
+    "Polish": {
+      "bye": "Pa!",
+      "hello": "Cześć"
+    }
+  }
+}

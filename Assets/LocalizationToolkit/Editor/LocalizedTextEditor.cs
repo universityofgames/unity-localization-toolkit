@@ -5,24 +5,23 @@ using UnityEngine;
 
 [CustomEditor(typeof(LocalizedText))]
 public class LocalizedTextEditor : Editor {
-	private LocalizationManager localizationManager;
-	private int selectedIndex;
+	private LocalizationManager _localizationManager;
+	private int _selectedIndex;
 
 	public override void OnInspectorGUI() {
-		if (localizationManager == null)
-			localizationManager = FindObjectOfType<LocalizationManager>();
+		if (_localizationManager == null)
+			_localizationManager = FindObjectOfType<LocalizationManager>();
+		
 		LocalizedText myTarget = (LocalizedText)target;
 		myTarget.key = EditorGUILayout.TextField("Translation ID", myTarget.key);
-		if (localizationManager != null)
+		
+		string[] keysToShow = _localizationManager.GetKeys();
+		if (keysToShow != null)
 		{
-			string[] keysToShow = localizationManager.GetKeys();
-			if (keysToShow != null)
-			{
-				GUILayout.Label("Select key ID");
-				selectedIndex = EditorGUILayout.Popup(selectedIndex, keysToShow);
-				if (GUILayout.Button("Set selected key"))
-					myTarget.key = keysToShow[selectedIndex];
-			}
+			GUILayout.Label("Select key ID");
+			_selectedIndex = EditorGUILayout.Popup(_selectedIndex, keysToShow);
+			if (GUILayout.Button("Set selected key"))
+				myTarget.key = keysToShow[_selectedIndex];
 		}
 	}
 }

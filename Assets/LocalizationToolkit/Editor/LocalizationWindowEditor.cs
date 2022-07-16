@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using UnityEditor;
 using UnityEngine;
 using Newtonsoft.Json;
+using Formatting = Newtonsoft.Json.Formatting;
 
 public class LocalizationWindowEditor : EditorWindow {
 	public LocalizationData localizationData;
@@ -53,11 +54,11 @@ public class LocalizationWindowEditor : EditorWindow {
 		}
 		GUILayout.EndHorizontal();
 		GUILayout.Space(10);
-		EditorGUILayout.LabelField("Load from local: ");
+		EditorGUILayout.LabelField("Local file: ");
 		extension = (AvailableExtensions)EditorGUILayout.EnumPopup("File extension", extension);
-		if (GUILayout.Button("Load data"))
+		if (GUILayout.Button("Load File:"))
 		{
-			LoadGameData();
+			LoadFromFile();
 		}
 
 		if (GUILayout.Button("Create new data"))
@@ -65,7 +66,7 @@ public class LocalizationWindowEditor : EditorWindow {
 			CreateNewData();
 		}
 
-		if (localizationData != null)
+		if (localizationData != null && localizationData.languages != null)
 		{
 			if (GUILayout.Button("Save data"))
 			{
@@ -361,30 +362,29 @@ public class LocalizationWindowEditor : EditorWindow {
 		}
 	}
 
-	private void LoadGameData() {
+	private void LoadFromFile() {
 		string filePath = EditorUtility.OpenFilePanel("Select localization data file", Application.streamingAssetsPath, extension.ToString().ToLower());
-
-		if (!string.IsNullOrEmpty(filePath))
-		{
+		if (!string.IsNullOrEmpty(filePath)) {
 			ResetIndexes();
 			string data = File.ReadAllText(filePath);
-			if (extension == AvailableExtensions.json)
+			switch (extension)
 			{
-				LoadJSONFile(data);
-			}
-			else if (extension == AvailableExtensions.xml)
-			{
-				LoadXMLFile(data);
+				case AvailableExtensions.json:
+					LoadJSONFile(data);
+					break;
+				case AvailableExtensions.xml:
+					LoadXMLFile(data);
+					break;
 			}
 		}
 	}
 
 	private void LoadJSONFile(string data)
 	{
-		Dictionary<string, Dictionary<string, string>> jsonData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(data);
-		localizationData = new LocalizationData(jsonData);
+		Dictionary<string, Dictionary<string, string>> objData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(data);
+		localizationData = new LocalizationData(objData);
 	}
-
+	
 	private void LoadXMLFile(string data) {
 		XDocument xmlDocument = XDocument.Parse(data);
 		localizationData = new LocalizationData(xmlDocument);
@@ -405,9 +405,10 @@ public class LocalizationWindowEditor : EditorWindow {
 		}
 	}
 
-	private void SaveJSONFile(string filePath) {
-		string data = localizationData.SaveLocalizationDataToJSON().ToString();
-		File.WriteAllText(filePath, data);
+	private void SaveJSONFile(string filePath)
+	{
+		var json = JsonConvert.SerializeObject(localizationData.languages, Formatting.Indented);
+		File.WriteAllText(filePath, json);
 	}
 
 	private void SaveXMLFile(string filePath) {
