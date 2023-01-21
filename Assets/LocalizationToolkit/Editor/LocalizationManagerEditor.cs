@@ -1,4 +1,11 @@
-﻿using System.IO;
+﻿/*
+ * This script is a custom editor for the LocalizationManager class in Unity. 
+ * The script is used to create a custom inspector in the Unity editor that allows 
+ * the user to load localization data from either a file on the web or a local file, 
+ * as well as select and load a specific language.
+ */
+
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 

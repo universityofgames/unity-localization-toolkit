@@ -1,4 +1,10 @@
-﻿using System;
+﻿/* 
+ * The script is an editor window script for Unity, specifically a localization editor window that allows the user to load, edit, and save localization data.
+ * Defines a custom class called LocalizationData, and an instance of this class is used to store the current localization data being edited in the window.
+ * Main functionality is loading and saving localization data from web URL or a local file in JSON or XML format, as well as creating new localization data.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
