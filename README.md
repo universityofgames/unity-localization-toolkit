@@ -21,7 +21,7 @@ We have added the ability to load any CSV or XML files. Use can automatically lo
 * * *
 
 ### Check our others Unity package
-You can also find our other solutions on the Unity Asset Store: <b>[here](https://assetstore.unity.com/publishers/25633)</b>
+➡️ You can also find our other solutions on the **[Unity Asset Store](https://assetstore.unity.com/publishers/25633)**
 
 * * *
 
