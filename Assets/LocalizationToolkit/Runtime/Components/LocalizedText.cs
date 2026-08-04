@@ -28,6 +28,8 @@ namespace UniversityOfGames.LocalizationToolkit
 
 		private Text _uiText;
 		private TMP_Text _tmpText;
+		private HorizontalAlignmentOptions _originalTmpAlignment;
+		private bool _originalTmpAlignmentCaptured;
 
 		/// <summary>Translation key used to look up the localized value. Setting it refreshes the text.</summary>
 		public string Key
@@ -63,9 +65,40 @@ namespace UniversityOfGames.LocalizationToolkit
 
 			string value = manager.GetLocalizedValue(_key);
 			if (_tmpText != null)
+			{
 				_tmpText.text = value;
+				ApplyTextDirection(manager.IsActiveLanguageRightToLeft);
+			}
 			else if (_uiText != null)
+			{
 				_uiText.text = value;
+			}
+		}
+
+		private void ApplyTextDirection(bool rightToLeft)
+		{
+			if (!_originalTmpAlignmentCaptured)
+			{
+				_originalTmpAlignment = _tmpText.horizontalAlignment;
+				_originalTmpAlignmentCaptured = true;
+			}
+
+			if (_tmpText.isRightToLeftText != rightToLeft)
+				_tmpText.isRightToLeftText = rightToLeft;
+
+			_tmpText.horizontalAlignment = rightToLeft
+				? MirrorAlignment(_originalTmpAlignment)
+				: _originalTmpAlignment;
+		}
+
+		private static HorizontalAlignmentOptions MirrorAlignment(HorizontalAlignmentOptions alignment)
+		{
+			switch (alignment)
+			{
+				case HorizontalAlignmentOptions.Left: return HorizontalAlignmentOptions.Right;
+				case HorizontalAlignmentOptions.Right: return HorizontalAlignmentOptions.Left;
+				default: return alignment;
+			}
 		}
 
 		private void CacheTargetComponents()

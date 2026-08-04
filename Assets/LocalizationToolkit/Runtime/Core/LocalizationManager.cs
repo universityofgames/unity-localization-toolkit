@@ -77,6 +77,10 @@ namespace UniversityOfGames.LocalizationToolkit
 		private string _missingTranslationText = "Localized text not found";
 
 		[SerializeField]
+		[Tooltip("Languages rendered right-to-left. LocalizedText flips TextMeshPro components for them.")]
+		private List<string> _rightToLeftLanguages = new List<string> { "Arabic", "Hebrew" };
+
+		[SerializeField]
 		[Tooltip("Invoked whenever a different language is activated.")]
 		private UnityEvent _onLanguageChanged = new UnityEvent();
 
@@ -127,6 +131,20 @@ namespace UniversityOfGames.LocalizationToolkit
 
 		/// <summary>True when localization data has been loaded.</summary>
 		public bool IsLoaded => _data?.Languages != null && _data.Languages.Count > 0;
+
+		/// <summary>Culture of the active language, used by <see cref="FormatLocalized"/>.</summary>
+		public System.Globalization.CultureInfo ActiveCulture => LocalizationCultures.GetCulture(_activeLanguage);
+
+		/// <summary>True when the active language is configured as right-to-left.</summary>
+		public bool IsActiveLanguageRightToLeft => IsRightToLeft(_activeLanguage);
+
+		/// <summary>Checks whether a language is configured as right-to-left.</summary>
+		/// <param name="languageKey">Language key to check.</param>
+		/// <returns>True when the language is in the right-to-left list.</returns>
+		public bool IsRightToLeft(string languageKey)
+		{
+			return !string.IsNullOrEmpty(languageKey) && _rightToLeftLanguages.Contains(languageKey);
+		}
 
 		protected override void Awake()
 		{
@@ -363,6 +381,24 @@ namespace UniversityOfGames.LocalizationToolkit
 
 			text = LocalizationTextFormatter.ApplyTokens(text, ("count", count.ToString()));
 			return tokens != null && tokens.Length > 0 ? LocalizationTextFormatter.ApplyTokens(text, tokens) : text;
+		}
+
+		/// <summary>
+		/// Returns the translation with culture-aware <c>{token:format}</c> formatting —
+		/// numbers, dates and currency are rendered in the active language's culture.
+		/// </summary>
+		/// <param name="key">Translation key to look up.</param>
+		/// <param name="args">Pairs of token names (without braces) and values; formats follow standard .NET format strings.</param>
+		/// <returns>The translated value with every placeholder formatted and substituted.</returns>
+		/// <example>
+		/// <code>
+		/// // "total" = "Total: {price:C} on {date:d}"
+		/// manager.FormatLocalized("total", ("price", 9.99m), ("date", System.DateTime.Now));
+		/// </code>
+		/// </example>
+		public string FormatLocalized(string key, params (string token, object value)[] args)
+		{
+			return LocalizationTextFormatter.ApplyTokens(GetLocalizedValue(key), ActiveCulture, args);
 		}
 
 		/// <summary>Tries to fetch the translation for the given key in the active language.</summary>
