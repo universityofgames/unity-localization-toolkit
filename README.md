@@ -2,6 +2,8 @@
 
 # Localization Toolkit for Unity
 
+![Tests](https://github.com/universityofgames/unity-localization-toolkit/actions/workflows/tests.yml/badge.svg)
+
 A lightweight, production-ready localization system for Unity 6. Add multi-language support to your game in minutes: keep your translations in JSON, XML or CSV files, edit them in a dedicated editor window, and let your UI update itself whenever the language changes.
 
 <img width="701" alt="Localization Toolkit inspector" src="https://user-images.githubusercontent.com/10097678/157235530-1da24364-2858-43c5-8482-0cf5b356605c.png">
