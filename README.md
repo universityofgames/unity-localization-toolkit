@@ -24,6 +24,8 @@ A lightweight, production-ready localization system for Unity 6. Add multi-langu
 - Unity **6000.5** or newer
 - Packages: `com.unity.ugui`, `com.unity.nuget.newtonsoft-json` (both declared in the project manifest)
 
+A complete manual — components reference, file formats, AI translation, scripting API and FAQ — ships with the package: [`Documentation/UserGuide.md`](Assets/LocalizationToolkit/Documentation/UserGuide.md).
+
 ## Quick Start
 
 1. **Add the manager** — create an empty GameObject and add the `Localization Manager` component (*Add Component → Localization Toolkit → Localization Manager*).
@@ -113,6 +115,7 @@ Everything ships inside a single folder:
 
 ```
 Assets/LocalizationToolkit/
+├── Documentation/     Full user guide (UserGuide.md)
 ├── Editor/
 │   ├── Translation/   AI translation (Claude / GPT) integration
 │   └── ...            Custom inspectors and the Localization Editor window
