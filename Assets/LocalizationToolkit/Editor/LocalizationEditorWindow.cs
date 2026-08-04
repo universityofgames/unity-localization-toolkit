@@ -8,8 +8,8 @@ using UnityEngine;
 namespace UniversityOfGames.LocalizationToolkit.Editor
 {
 	/// <summary>
-	/// Editor window for creating, editing and saving localization data
-	/// in any of the supported file formats (JSON, XML, CSV).
+	/// Editor window for creating, editing, AI-translating and saving localization
+	/// data in any of the supported file formats (JSON, XML, CSV).
 	/// </summary>
 	public class LocalizationEditorWindow : EditorWindow
 	{
@@ -18,20 +18,22 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		private const float MinTextFieldWidth = 300f;
 		private const float FromRightOffset = 50f;
 		private const float EnumWidth = 350f;
-		private const float ButtonWidth = 200f;
+		private const float SideButtonWidth = 80f;
 		private const int ColumnCount = 2;
-
-		private LocalizationData _data = new LocalizationData();
-		private LocalizationFileFormat _fileFormat;
-		private string _fileUrl = string.Empty;
 
 		private const string ApiKeyPrefsPrefix = "UniversityOfGames.LocalizationToolkit.ApiKey.";
 		private const string ModelPrefsPrefix = "UniversityOfGames.LocalizationToolkit.Model.";
+
+		private LocalizationData _data = new LocalizationData();
+		private LocalizationFileFormat _fileFormat;
+		private TextAsset _fileAsset;
+		private string _fileUrl = string.Empty;
 
 		private string[] _languageNames = Array.Empty<string>();
 		private string[] _languagesAvailableToAdd = Array.Empty<string>();
 		private int _selectedLanguageIndex;
 		private int _languageToAddIndex;
+		private string _searchFilter = string.Empty;
 
 		private bool _showAiTranslation = true;
 		private AiTranslationProvider _aiProvider;
@@ -46,6 +48,8 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		private int _lastCursorPosition;
 		private int _lastSelectCursorPosition;
 
+		private bool HasData => _data?.Languages != null && _data.Languages.Count > 0;
+
 		private string KeySourceLanguage =>
 			_data.Languages.ContainsKey(LocalizationManager.DefaultLanguageKey)
 				? LocalizationManager.DefaultLanguageKey
@@ -54,7 +58,9 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		[MenuItem("Tools/Localization Toolkit/Localization Editor")]
 		private static void Open()
 		{
-			GetWindow<LocalizationEditorWindow>("Localization Editor").Show();
+			var window = GetWindow<LocalizationEditorWindow>("Localization Editor");
+			window.minSize = new Vector2(700f, 560f);
+			window.Show();
 		}
 
 		private void OnEnable()
@@ -64,74 +70,85 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 
 		private void OnGUI()
 		{
-			GUILayout.Space(10);
-			EditorGUILayout.LabelField("Load from web:", EditorStyles.boldLabel);
-			GUILayout.BeginHorizontal();
+			GUILayout.Space(6);
+			DrawDataSection();
+			DrawLanguagesSection();
+			DrawAiTranslationSection();
+			DrawEntriesSection();
+			GUILayout.Space(6);
+		}
+
+		// --- Data source -------------------------------------------------------
+
+		private void DrawDataSection()
+		{
+			using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
 			{
-				_fileUrl = EditorGUILayout.TextField("File URL", _fileUrl);
-				if (GUILayout.Button("Load From Web", GUILayout.Width(ButtonWidth)))
-					LoadFromWeb();
-			}
-			GUILayout.EndHorizontal();
+				EditorGUILayout.LabelField("Localization Data", EditorStyles.boldLabel);
 
-			GUILayout.Space(10);
-			EditorGUILayout.LabelField("Local file:", EditorStyles.boldLabel);
-			_fileFormat = (LocalizationFileFormat)EditorGUILayout.EnumPopup("File Format", _fileFormat);
-			if (GUILayout.Button("Load File"))
-				LoadFromFile();
-
-			if (GUILayout.Button("Create New Data"))
-				CreateNewData();
-
-			if (_data.Languages.Count > 0)
-			{
-				if (GUILayout.Button("Save Data"))
-					SaveToFile();
-
-				DrawAiTranslationSection();
-
-				GUILayout.Space(25);
-
-				float spacePerColumn = (position.width - RemoveButtonWidth - FromRightOffset) / ColumnCount;
-				_languageNames = _data.Languages.Keys.ToArray();
-
-				GUILayout.BeginHorizontal();
+				using (new EditorGUILayout.HorizontalScope())
 				{
-					GUILayout.BeginVertical(GUILayout.Width(spacePerColumn));
+					_fileAsset = (TextAsset)EditorGUILayout.ObjectField(
+						new GUIContent("File Asset", "A JSON, XML or CSV localization file. The format is detected automatically."),
+						_fileAsset, typeof(TextAsset), false);
+					using (new EditorGUI.DisabledScope(_fileAsset == null))
 					{
-						DrawLanguageSelection();
+						if (GUILayout.Button("Load", GUILayout.Width(SideButtonWidth)))
+							LoadFromAsset();
 					}
-					GUILayout.EndVertical();
-
-					GUILayout.BeginVertical(GUILayout.Width(spacePerColumn));
-					{
-						GUILayout.BeginHorizontal();
-						{
-							DrawAddNewLanguage();
-						}
-						GUILayout.EndHorizontal();
-
-						DrawRemoveLanguage();
-						DrawAddNewEntry();
-					}
-					GUILayout.EndVertical();
 				}
-				GUILayout.EndHorizontal();
 
-				GUILayout.Space(15);
+				using (new EditorGUILayout.HorizontalScope())
+				{
+					_fileUrl = EditorGUILayout.TextField(
+						new GUIContent("File URL", "Remote .json, .xml or .csv file to download."), _fileUrl);
+					using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(_fileUrl)))
+					{
+						if (GUILayout.Button("Load", GUILayout.Width(SideButtonWidth)))
+							LoadFromWeb();
+					}
+				}
 
-				DrawColumnLabels(spacePerColumn);
-				DrawLocalizationGrid(spacePerColumn);
+				GUILayout.Space(4);
+
+				using (new EditorGUILayout.HorizontalScope())
+				{
+					if (GUILayout.Button("Open File...", GUILayout.Height(22f)))
+						LoadFromFile();
+					if (GUILayout.Button("Create New", GUILayout.Height(22f)))
+						CreateNewData();
+					using (new EditorGUI.DisabledScope(!HasData))
+					{
+						if (GUILayout.Button("Save As...", GUILayout.Height(22f)))
+							SaveToFile();
+					}
+				}
+
+				_fileFormat = (LocalizationFileFormat)EditorGUILayout.EnumPopup(
+					new GUIContent("Save Format", "Format used by 'Save As...'."), _fileFormat);
 			}
+		}
 
-			GUILayout.Space(10);
+		private void LoadFromAsset()
+		{
+			try
+			{
+				ResetSelection();
+				_data = LocalizationData.Parse(_fileAsset.text, LocalizationFileFormatUtility.DetectFormat(_fileAsset.text));
+			}
+			catch (Exception exception)
+			{
+				EditorUtility.DisplayDialog("Localization Toolkit",
+					$"Could not parse '{_fileAsset.name}':\n{exception.Message}", "OK");
+			}
 		}
 
 		private void LoadFromWeb()
 		{
 			if (!RemoteFileLoader.TryGetFileFormatFromUrl(_fileUrl, out LocalizationFileFormat format))
 			{
-				Debug.LogError("[LocalizationToolkit] The URL must point to a .json, .xml or .csv file.");
+				EditorUtility.DisplayDialog("Localization Toolkit",
+					"The URL must point to a .json, .xml or .csv file.", "OK");
 				return;
 			}
 
@@ -139,25 +156,50 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			if (string.IsNullOrEmpty(rawData))
 				return;
 
-			ResetSelection();
-			_data = LocalizationData.Parse(rawData, format);
+			try
+			{
+				ResetSelection();
+				_data = LocalizationData.Parse(rawData, format);
+			}
+			catch (Exception exception)
+			{
+				EditorUtility.DisplayDialog("Localization Toolkit",
+					$"Could not parse the downloaded file:\n{exception.Message}", "OK");
+			}
 		}
 
 		private void LoadFromFile()
 		{
-			string filePath = EditorUtility.OpenFilePanel(
-				"Select localization data file", Application.streamingAssetsPath, _fileFormat.ToExtension());
+			string filePath = EditorUtility.OpenFilePanelWithFilters(
+				"Open localization file", Application.dataPath,
+				new[] { "Localization files", "json,xml,csv", "JSON", "json", "XML", "xml", "CSV", "csv" });
 			if (string.IsNullOrEmpty(filePath))
 				return;
 
-			ResetSelection();
-			_data = LocalizationData.Parse(File.ReadAllText(filePath), _fileFormat);
+			if (!LocalizationFileFormatUtility.TryParseExtension(Path.GetExtension(filePath), out LocalizationFileFormat format))
+			{
+				EditorUtility.DisplayDialog("Localization Toolkit",
+					"Unsupported file type. Choose a .json, .xml or .csv file.", "OK");
+				return;
+			}
+
+			try
+			{
+				ResetSelection();
+				_data = LocalizationData.Parse(File.ReadAllText(filePath), format);
+				_fileFormat = format;
+			}
+			catch (Exception exception)
+			{
+				EditorUtility.DisplayDialog("Localization Toolkit",
+					$"Could not parse '{Path.GetFileName(filePath)}':\n{exception.Message}", "OK");
+			}
 		}
 
 		private void SaveToFile()
 		{
 			string filePath = EditorUtility.SaveFilePanel(
-				"Save localization data file", Application.streamingAssetsPath, "lang", _fileFormat.ToExtension());
+				"Save localization data file", Application.dataPath, "lang", _fileFormat.ToExtension());
 			if (string.IsNullOrEmpty(filePath))
 				return;
 
@@ -175,26 +217,51 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		{
 			_selectedLanguageIndex = 0;
 			_languageToAddIndex = 0;
+			_searchFilter = string.Empty;
 		}
 
-		private void DrawLanguageSelection()
+		// --- Languages ---------------------------------------------------------
+
+		private void DrawLanguagesSection()
 		{
-			_selectedLanguageIndex = EditorGUILayout.Popup(
-				"Select Language", _selectedLanguageIndex, _languageNames, GUILayout.MaxWidth(EnumWidth));
-		}
+			if (!HasData)
+				return;
 
-		private void DrawAddNewLanguage()
-		{
-			_languagesAvailableToAdd = GetLanguagesAvailableToAdd();
+			_languageNames = _data.Languages.Keys.ToArray();
+			_selectedLanguageIndex = Mathf.Clamp(_selectedLanguageIndex, 0, _languageNames.Length - 1);
 
-			if (GUILayout.Button("Add New Language", GUILayout.Width(ButtonWidth)))
-				AddNewLanguage();
+			using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+			{
+				EditorGUILayout.LabelField($"Languages ({_languageNames.Length})", EditorStyles.boldLabel);
 
-			if (_languageToAddIndex >= _languagesAvailableToAdd.Length && _languagesAvailableToAdd.Length > 0)
-				_languageToAddIndex = 0;
+				using (new EditorGUILayout.HorizontalScope())
+				{
+					_selectedLanguageIndex = EditorGUILayout.Popup(
+						new GUIContent("Edited Language", "Language shown in the value column of the table below."),
+						_selectedLanguageIndex, _languageNames);
 
-			_languageToAddIndex = EditorGUILayout.Popup(
-				"Language", _languageToAddIndex, _languagesAvailableToAdd, GUILayout.MaxWidth(EnumWidth));
+					bool isKeySource = _languageNames[_selectedLanguageIndex] == LocalizationManager.DefaultLanguageKey;
+					using (new EditorGUI.DisabledScope(isKeySource))
+					{
+						if (GUILayout.Button("Remove", GUILayout.Width(SideButtonWidth)))
+							RemoveSelectedLanguage();
+					}
+				}
+
+				using (new EditorGUILayout.HorizontalScope())
+				{
+					_languagesAvailableToAdd = GetLanguagesAvailableToAdd();
+					if (_languageToAddIndex >= _languagesAvailableToAdd.Length && _languagesAvailableToAdd.Length > 0)
+						_languageToAddIndex = 0;
+
+					_languageToAddIndex = EditorGUILayout.Popup("Add Language", _languageToAddIndex, _languagesAvailableToAdd);
+					using (new EditorGUI.DisabledScope(_languagesAvailableToAdd.Length == 0))
+					{
+						if (GUILayout.Button("Add", GUILayout.Width(SideButtonWidth)))
+							AddNewLanguage();
+					}
+				}
+			}
 		}
 
 		private string[] GetLanguagesAvailableToAdd()
@@ -204,37 +271,217 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				.ToArray();
 		}
 
-		private void DrawRemoveLanguage()
+		private void AddNewLanguage()
 		{
-			if (GUILayout.Button("Remove Selected Language", GUILayout.Width(ButtonWidth)))
-				RemoveSelectedLanguage();
+			string language = _languagesAvailableToAdd[_languageToAddIndex];
+			var table = new Dictionary<string, string>();
+			foreach (string key in _data.Languages[KeySourceLanguage].Keys)
+				table[key] = string.Empty;
+
+			_data.Languages[language] = table;
 		}
 
-		private void DrawAddNewEntry()
+		private void RemoveSelectedLanguage()
 		{
-			if (GUILayout.Button("Add New Entry", GUILayout.Width(ButtonWidth)))
-				AddNewEntry();
+			string language = _languageNames[_selectedLanguageIndex];
+			if (language == LocalizationManager.DefaultLanguageKey)
+				return;
+
+			if (!EditorUtility.DisplayDialog("Remove Language",
+				$"Remove '{language}' and all of its translations?", "Remove", "Cancel"))
+				return;
+
+			_data.Languages.Remove(language);
+			_selectedLanguageIndex = 0;
+		}
+
+		// --- AI translation ----------------------------------------------------
+
+		private void DrawAiTranslationSection()
+		{
+			using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+			{
+				_showAiTranslation = EditorGUILayout.Foldout(_showAiTranslation, "AI Translation", true, EditorStyles.foldoutHeader);
+				if (!_showAiTranslation)
+					return;
+
+				EditorGUI.BeginChangeCheck();
+				_aiProvider = (AiTranslationProvider)EditorGUILayout.Popup(
+					new GUIContent("Provider"), (int)_aiProvider,
+					new[] { AiTranslationProvider.Claude.GetDisplayName(), AiTranslationProvider.OpenAi.GetDisplayName() });
+				if (EditorGUI.EndChangeCheck())
+					LoadAiPreferences();
+
+				_aiModel = EditorGUILayout.TextField(
+					new GUIContent("Model", "Model identifier sent to the provider."), _aiModel);
+				_aiApiKey = EditorGUILayout.PasswordField(
+					new GUIContent("API Key", "Stored in EditorPrefs on this machine only."), _aiApiKey);
+				_aiOverwriteExisting = EditorGUILayout.Toggle(
+					new GUIContent("Overwrite Existing", "Retranslate entries that already have a value."),
+					_aiOverwriteExisting);
+
+				EditorGUILayout.HelpBox(
+					"Translates entries of the edited language from the key source language. " +
+					"The API key is stored in EditorPrefs on this machine only - it is never written to project files or builds.",
+					MessageType.Info);
+
+				if (!HasData)
+				{
+					EditorGUILayout.HelpBox("Load or create localization data to enable AI translation.", MessageType.Warning);
+					return;
+				}
+
+				string sourceLanguage = KeySourceLanguage;
+				string targetLanguage = _languageNames.Length > 0
+					? _languageNames[Mathf.Clamp(_selectedLanguageIndex, 0, _languageNames.Length - 1)]
+					: string.Empty;
+
+				if (targetLanguage == sourceLanguage)
+				{
+					EditorGUILayout.HelpBox(
+						$"'{sourceLanguage}' is the key source language. Select a different edited language above to translate into it.",
+						MessageType.Warning);
+				}
+
+				using (new EditorGUI.DisabledScope(
+					string.IsNullOrWhiteSpace(_aiApiKey) || targetLanguage == sourceLanguage || string.IsNullOrEmpty(targetLanguage)))
+				{
+					if (GUILayout.Button($"Translate '{targetLanguage}' With AI", GUILayout.Height(26f)))
+						TranslateSelectedLanguage(sourceLanguage, targetLanguage);
+				}
+
+				if (string.IsNullOrWhiteSpace(_aiApiKey))
+					EditorGUILayout.HelpBox("Enter your API key to enable translation.", MessageType.None);
+			}
+		}
+
+		private void TranslateSelectedLanguage(string sourceLanguage, string targetLanguage)
+		{
+			SaveAiPreferences();
+
+			Dictionary<string, string> sourceTable = _data.Languages[sourceLanguage];
+			Dictionary<string, string> targetTable = _data.Languages[targetLanguage];
+
+			var entries = new Dictionary<string, string>();
+			foreach (KeyValuePair<string, string> entry in sourceTable)
+			{
+				if (string.IsNullOrWhiteSpace(entry.Value))
+					continue;
+
+				if (!_aiOverwriteExisting && targetTable.TryGetValue(entry.Key, out string existing) && !string.IsNullOrWhiteSpace(existing))
+					continue;
+
+				entries[entry.Key] = entry.Value;
+			}
+
+			if (entries.Count == 0)
+			{
+				EditorUtility.DisplayDialog("AI Translation",
+					$"There is nothing to translate: every '{targetLanguage}' entry already has a value. " +
+					"Enable 'Overwrite Existing' to retranslate them.", "OK");
+				return;
+			}
+
+			string model = string.IsNullOrWhiteSpace(_aiModel) ? _aiProvider.GetDefaultModel() : _aiModel.Trim();
+			Dictionary<string, string> translations = AiTranslator.TranslateEntries(
+				_aiProvider, _aiApiKey.Trim(), model, sourceLanguage, targetLanguage, entries);
+
+			if (translations == null)
+				return;
+
+			int applied = 0;
+			foreach (KeyValuePair<string, string> translation in translations)
+			{
+				if (!sourceTable.ContainsKey(translation.Key))
+					continue;
+
+				targetTable[translation.Key] = translation.Value;
+				applied++;
+			}
+
+			Repaint();
+			Debug.Log($"[LocalizationToolkit] Applied {applied} AI translations to '{targetLanguage}'. Remember to save the data.");
+		}
+
+		private void LoadAiPreferences()
+		{
+			_aiApiKey = EditorPrefs.GetString(ApiKeyPrefsPrefix + _aiProvider, string.Empty);
+			_aiModel = EditorPrefs.GetString(ModelPrefsPrefix + _aiProvider, _aiProvider.GetDefaultModel());
+		}
+
+		private void SaveAiPreferences()
+		{
+			EditorPrefs.SetString(ApiKeyPrefsPrefix + _aiProvider, _aiApiKey.Trim());
+			EditorPrefs.SetString(ModelPrefsPrefix + _aiProvider, string.IsNullOrWhiteSpace(_aiModel) ? _aiProvider.GetDefaultModel() : _aiModel.Trim());
+		}
+
+		// --- Entries -----------------------------------------------------------
+
+		private void DrawEntriesSection()
+		{
+			if (!HasData)
+			{
+				EditorGUILayout.HelpBox(
+					"No localization data is loaded. Load a file asset, open a file, download one from a URL or create new data to get started.",
+					MessageType.Info);
+				return;
+			}
+
+			using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+			{
+				int totalKeys = _data.Languages[KeySourceLanguage].Count;
+
+				using (new EditorGUILayout.HorizontalScope())
+				{
+					EditorGUILayout.LabelField($"Entries ({totalKeys})", EditorStyles.boldLabel, GUILayout.Width(150f));
+					GUILayout.FlexibleSpace();
+					_searchFilter = EditorGUILayout.TextField(_searchFilter, EditorStyles.toolbarSearchField, GUILayout.Width(220f));
+					if (GUILayout.Button("Add Entry", GUILayout.Width(90f)))
+						AddNewEntry();
+				}
+
+				GUILayout.Space(4);
+
+				float spacePerColumn = (position.width - RemoveButtonWidth - FromRightOffset) / ColumnCount;
+				DrawColumnLabels(spacePerColumn);
+				DrawLocalizationGrid(spacePerColumn);
+			}
 		}
 
 		private void DrawColumnLabels(float spacePerColumn)
 		{
+			string valueLanguage = _languageNames.Length > 0
+				? _languageNames[Mathf.Clamp(_selectedLanguageIndex, 0, _languageNames.Length - 1)]
+				: string.Empty;
+
 			GUILayout.BeginHorizontal();
-			GUILayout.Label("Key", GUILayout.MinWidth(MinTextFieldWidth), GUILayout.MaxWidth(spacePerColumn));
-			GUILayout.Label("Value", GUILayout.MinWidth(MinTextFieldWidth), GUILayout.MaxWidth(spacePerColumn));
+			GUILayout.Label("Key", EditorStyles.miniBoldLabel, GUILayout.MinWidth(MinTextFieldWidth), GUILayout.MaxWidth(spacePerColumn));
+			GUILayout.Label($"Value ({valueLanguage})", EditorStyles.miniBoldLabel, GUILayout.MinWidth(MinTextFieldWidth), GUILayout.MaxWidth(spacePerColumn));
 			GUILayout.EndHorizontal();
 		}
 
 		private void DrawLocalizationGrid(float spacePerColumn)
 		{
-			var editedLanguages = new Dictionary<string, Dictionary<string, string>>();
 			var keysToReplace = new Dictionary<string, string>();
 			var keysToRemove = new List<string>();
 
 			string keySourceLanguage = KeySourceLanguage;
+			int totalKeys = _data.Languages[keySourceLanguage].Count;
+
 			var localizationKeys = _data.Languages[keySourceLanguage].Keys.ToList();
 			localizationKeys.Sort();
+			if (!string.IsNullOrEmpty(_searchFilter))
+			{
+				localizationKeys = localizationKeys
+					.Where(key => key.IndexOf(_searchFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+					.ToList();
+			}
 
-			editedLanguages[keySourceLanguage] = new Dictionary<string, string>();
+			// Full copy so keys hidden by the search filter are never lost on reassignment.
+			var editedLanguages = new Dictionary<string, Dictionary<string, string>>();
+			foreach (KeyValuePair<string, Dictionary<string, string>> language in _data.Languages)
+				editedLanguages[language.Key] = new Dictionary<string, string>(language.Value);
+
 			_scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
 			string selectedLanguage = _languageNames[Mathf.Clamp(_selectedLanguageIndex, 0, _languageNames.Length - 1)];
@@ -254,26 +501,14 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 					_textEditor = GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl) as TextEditor;
 				}
 
-				foreach (string language in _data.Languages.Keys)
-				{
-					if (!editedLanguages.ContainsKey(language))
-						editedLanguages[language] = new Dictionary<string, string>();
-
-					if (language == selectedLanguage)
-					{
-						editedLanguages[language][key] = GUILayout.TextField(
-							_data.Languages[language][key],
-							GUILayout.MinWidth(MinTextFieldWidth), GUILayout.MaxWidth(spacePerColumn));
-					}
-					else
-					{
-						editedLanguages[language][key] = _data.Languages[language][key];
-					}
-				}
+				_data.Languages[selectedLanguage].TryGetValue(key, out string currentValue);
+				editedLanguages[selectedLanguage][key] = GUILayout.TextField(
+					currentValue ?? string.Empty,
+					GUILayout.MinWidth(MinTextFieldWidth), GUILayout.MaxWidth(spacePerColumn));
 
 				if (GUILayout.Button("-", GUILayout.Width(RemoveButtonWidth)))
 				{
-					if (localizationKeys.Count > 1)
+					if (totalKeys > 1)
 						keysToRemove.Add(key);
 					else
 						Debug.LogError("[LocalizationToolkit] Translation data needs at least one key.");
@@ -346,140 +581,6 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			}
 
 			return key;
-		}
-
-		private void AddNewLanguage()
-		{
-			if (_languagesAvailableToAdd.Length == 0)
-			{
-				Debug.LogError("[LocalizationToolkit] There is no language left to add.");
-				return;
-			}
-
-			string language = _languagesAvailableToAdd[_languageToAddIndex];
-			var table = new Dictionary<string, string>();
-			foreach (string key in _data.Languages[KeySourceLanguage].Keys)
-				table[key] = string.Empty;
-
-			_data.Languages[language] = table;
-		}
-
-		private void RemoveSelectedLanguage()
-		{
-			string language = _languageNames[Mathf.Clamp(_selectedLanguageIndex, 0, _languageNames.Length - 1)];
-			if (language == LocalizationManager.DefaultLanguageKey)
-			{
-				Debug.LogError("[LocalizationToolkit] The default language cannot be removed.");
-				return;
-			}
-
-			_data.Languages.Remove(language);
-			_selectedLanguageIndex = 0;
-		}
-
-		private void DrawAiTranslationSection()
-		{
-			GUILayout.Space(10);
-			_showAiTranslation = EditorGUILayout.Foldout(_showAiTranslation, "AI Translation", true, EditorStyles.foldoutHeader);
-			if (!_showAiTranslation)
-				return;
-
-			EditorGUI.indentLevel++;
-
-			EditorGUI.BeginChangeCheck();
-			_aiProvider = (AiTranslationProvider)EditorGUILayout.Popup("Provider",
-				(int)_aiProvider, new[] { AiTranslationProvider.Claude.GetDisplayName(), AiTranslationProvider.OpenAi.GetDisplayName() });
-			if (EditorGUI.EndChangeCheck())
-				LoadAiPreferences();
-
-			_aiModel = EditorGUILayout.TextField("Model", _aiModel);
-			_aiApiKey = EditorGUILayout.PasswordField("API Key", _aiApiKey);
-			_aiOverwriteExisting = EditorGUILayout.Toggle("Overwrite Existing", _aiOverwriteExisting);
-
-			EditorGUILayout.HelpBox(
-				"The API key is stored in EditorPrefs on this machine only. It is never written to project files or builds.",
-				MessageType.Info);
-
-			string sourceLanguage = KeySourceLanguage;
-			string targetLanguage = _languageNames.Length > 0
-				? _languageNames[Mathf.Clamp(_selectedLanguageIndex, 0, _languageNames.Length - 1)]
-				: string.Empty;
-
-			if (targetLanguage == sourceLanguage)
-			{
-				EditorGUILayout.HelpBox(
-					$"Select a target language other than '{sourceLanguage}' (the key source language) to translate.",
-					MessageType.Warning);
-			}
-
-			using (new EditorGUI.DisabledScope(
-				string.IsNullOrWhiteSpace(_aiApiKey) || targetLanguage == sourceLanguage || string.IsNullOrEmpty(targetLanguage)))
-			{
-				if (GUILayout.Button($"Translate '{targetLanguage}' With AI"))
-					TranslateSelectedLanguage(sourceLanguage, targetLanguage);
-			}
-
-			EditorGUI.indentLevel--;
-		}
-
-		private void TranslateSelectedLanguage(string sourceLanguage, string targetLanguage)
-		{
-			SaveAiPreferences();
-
-			Dictionary<string, string> sourceTable = _data.Languages[sourceLanguage];
-			Dictionary<string, string> targetTable = _data.Languages[targetLanguage];
-
-			var entries = new Dictionary<string, string>();
-			foreach (KeyValuePair<string, string> entry in sourceTable)
-			{
-				if (string.IsNullOrWhiteSpace(entry.Value))
-					continue;
-
-				if (!_aiOverwriteExisting && targetTable.TryGetValue(entry.Key, out string existing) && !string.IsNullOrWhiteSpace(existing))
-					continue;
-
-				entries[entry.Key] = entry.Value;
-			}
-
-			if (entries.Count == 0)
-			{
-				EditorUtility.DisplayDialog("AI Translation",
-					$"There is nothing to translate: every '{targetLanguage}' entry already has a value. " +
-					"Enable 'Overwrite Existing' to retranslate them.", "OK");
-				return;
-			}
-
-			string model = string.IsNullOrWhiteSpace(_aiModel) ? _aiProvider.GetDefaultModel() : _aiModel.Trim();
-			Dictionary<string, string> translations = AiTranslator.TranslateEntries(
-				_aiProvider, _aiApiKey.Trim(), model, sourceLanguage, targetLanguage, entries);
-
-			if (translations == null)
-				return;
-
-			int applied = 0;
-			foreach (KeyValuePair<string, string> translation in translations)
-			{
-				if (!sourceTable.ContainsKey(translation.Key))
-					continue;
-
-				targetTable[translation.Key] = translation.Value;
-				applied++;
-			}
-
-			Repaint();
-			Debug.Log($"[LocalizationToolkit] Applied {applied} AI translations to '{targetLanguage}'. Remember to save the data.");
-		}
-
-		private void LoadAiPreferences()
-		{
-			_aiApiKey = EditorPrefs.GetString(ApiKeyPrefsPrefix + _aiProvider, string.Empty);
-			_aiModel = EditorPrefs.GetString(ModelPrefsPrefix + _aiProvider, _aiProvider.GetDefaultModel());
-		}
-
-		private void SaveAiPreferences()
-		{
-			EditorPrefs.SetString(ApiKeyPrefsPrefix + _aiProvider, _aiApiKey.Trim());
-			EditorPrefs.SetString(ModelPrefsPrefix + _aiProvider, string.IsNullOrWhiteSpace(_aiModel) ? _aiProvider.GetDefaultModel() : _aiModel.Trim());
 		}
 
 		private void RestoreFocusIfNeeded(List<string> localizationKeys)
