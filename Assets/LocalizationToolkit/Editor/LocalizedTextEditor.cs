@@ -1,34 +1,48 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(LocalizedText))]
-public class LocalizedTextEditor : Editor {
-	private LocalizationManager _localizationManager;
-	private int _selectedIndex;
+namespace UniversityOfGames.LocalizationToolkit.Editor
+{
+	/// <summary>
+	/// Custom inspector for <see cref="LocalizedText"/> that lets the user pick
+	/// a translation key from the data loaded in the <see cref="LocalizationManager"/>.
+	/// </summary>
+	[CustomEditor(typeof(LocalizedText))]
+	public class LocalizedTextEditor : UnityEditor.Editor
+	{
+		private SerializedProperty _key;
+		private int _selectedKeyIndex;
 
-	public override void OnInspectorGUI() {
-		// First checks if a reference to the LocalizationManager script has been set and if not, 
-		// it tries to find one in the current scene. Then, it creates a text field where the user 
-		// can input the key, or id, for the text that they want to display.
-		if (_localizationManager == null)
-			_localizationManager = FindObjectOfType<LocalizationManager>();
-		
-		LocalizedText myTarget = (LocalizedText)target;
-		myTarget.key = EditorGUILayout.TextField("Translation ID", myTarget.key);
-		
-		// The code then retrieves a list of keys from the LocalizationManager and uses them to 
-		// populate a dropdown list in the inspector. The user can select a key from the list and 
-		// press the 'Set selected key' button to set the key for the LocalizedText. This allows 
-		// for easy selection and assignment of keys for localized text.
-		string[] keysToShow = _localizationManager.GetKeys();
-		if (keysToShow != null)
+		private void OnEnable()
 		{
-			GUILayout.Label("Select key ID");
-			_selectedIndex = EditorGUILayout.Popup(_selectedIndex, keysToShow);
-			if (GUILayout.Button("Set selected key"))
-				myTarget.key = keysToShow[_selectedIndex];
+			_key = serializedObject.FindProperty("_key");
+		}
+
+		public override void OnInspectorGUI()
+		{
+			serializedObject.Update();
+			EditorGUILayout.PropertyField(_key, new GUIContent("Translation Key"));
+
+			LocalizationManager manager = LocalizationManager.Instance;
+			string[] keys = manager != null ? manager.GetKeys() : Array.Empty<string>();
+
+			if (keys.Length > 0)
+			{
+				_selectedKeyIndex = Mathf.Clamp(_selectedKeyIndex, 0, keys.Length - 1);
+				_selectedKeyIndex = EditorGUILayout.Popup("Available Keys", _selectedKeyIndex, keys);
+				if (GUILayout.Button("Use Selected Key"))
+					_key.stringValue = keys[_selectedKeyIndex];
+			}
+			else
+			{
+				EditorGUILayout.HelpBox(
+					"Load localization data in the LocalizationManager to pick a key from a list.",
+					MessageType.Info);
+			}
+
+			if (serializedObject.ApplyModifiedProperties())
+				((LocalizedText)target).Refresh();
 		}
 	}
 }

@@ -1,71 +1,76 @@
-﻿/*
- * This script is a custom editor for the LocalizationManager class in Unity. 
- * The script is used to create a custom inspector in the Unity editor that allows 
- * the user to load localization data from either a file on the web or a local file, 
- * as well as select and load a specific language.
- */
-
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(LocalizationManager))]
-public class LocalizationManagerEditor : Editor {
-	private int _selectedIndex = 0;
-
-	public override void OnInspectorGUI() {
-		GUILayout.BeginVertical();
-		WebSection();
-		GUILayout.EndVertical();
-
-		GUILayout.Space(20);	
-		
-		GUILayout.BeginVertical();
-		FileSection();
-		GUILayout.EndVertical();
-
-		GUILayout.Space(20);	
-		
-		GUILayout.BeginVertical();
-		LanguageSection();
-		GUILayout.EndVertical();
-	}
-
-	// Draw GUI for fetch file from WWW
-	private void WebSection()
+namespace UniversityOfGames.LocalizationToolkit.Editor
+{
+	/// <summary>
+	/// Custom inspector for <see cref="LocalizationManager"/> that allows loading
+	/// localization data from a remote URL or a local file and switching languages.
+	/// </summary>
+	[CustomEditor(typeof(LocalizationManager))]
+	public class LocalizationManagerEditor : UnityEditor.Editor
 	{
-		LocalizationManager localizationManager = (LocalizationManager)target;
-		localizationManager.fileURL = EditorGUILayout.TextField("File URL: ", localizationManager.fileURL);
-		if (GUILayout.Button("Load from web"))
+		private SerializedProperty _remoteUrl;
+		private SerializedProperty _localFileName;
+		private SerializedProperty _fileFormat;
+		private SerializedProperty _detectSystemLanguage;
+		private SerializedProperty _missingTranslationText;
+		private int _selectedLanguageIndex;
+
+		private void OnEnable()
 		{
-			localizationManager.LoadFromWeb(localizationManager.fileURL);
+			_remoteUrl = serializedObject.FindProperty("_remoteUrl");
+			_localFileName = serializedObject.FindProperty("_localFileName");
+			_fileFormat = serializedObject.FindProperty("_fileFormat");
+			_detectSystemLanguage = serializedObject.FindProperty("_detectSystemLanguage");
+			_missingTranslationText = serializedObject.FindProperty("_missingTranslationText");
 		}
-	}
 
-	// Draw GUI for fetch file from local storage
-	private void FileSection()
-	{
-		LocalizationManager localizationManager = (LocalizationManager)target;
-		localizationManager.fileName = EditorGUILayout.TextField("File name", localizationManager.fileName);
-		localizationManager.extension = (AvailableExtensions)EditorGUILayout.EnumPopup(localizationManager.extension);
-		if (GUILayout.Button("Load local file"))
+		public override void OnInspectorGUI()
 		{
-			string filepath = Path.Combine(Application.streamingAssetsPath, localizationManager.fileName + "." + localizationManager.extension.ToString().ToLower());
-			localizationManager.LoadFromFile(filepath, localizationManager.extension);
-		}
-	}
+			serializedObject.Update();
+			var manager = (LocalizationManager)target;
 
-	// Draw GUI for load language
-	private void LanguageSection()
-	{
-		LocalizationManager localizationManager = (LocalizationManager)target;
-		string[] languagesToShow = localizationManager.GetAvailableLanguages();
-		if (languagesToShow != null && languagesToShow.Length > 0)
-		{
-			GUILayout.Label("Select language");
-			_selectedIndex = EditorGUILayout.Popup(_selectedIndex, languagesToShow);
-			if (GUILayout.Button("Load language"))
-				localizationManager.LoadLanguage(languagesToShow[_selectedIndex]);
+			EditorGUILayout.LabelField("Remote Source", EditorStyles.boldLabel);
+			EditorGUILayout.PropertyField(_remoteUrl, new GUIContent("File URL"));
+			bool loadFromWeb;
+			using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(_remoteUrl.stringValue)))
+				loadFromWeb = GUILayout.Button("Load From Web");
+
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Local Source (StreamingAssets)", EditorStyles.boldLabel);
+			EditorGUILayout.PropertyField(_localFileName, new GUIContent("File Name"));
+			EditorGUILayout.PropertyField(_fileFormat, new GUIContent("File Format"));
+			bool loadFromFile;
+			using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(_localFileName.stringValue)))
+				loadFromFile = GUILayout.Button("Load Local File");
+
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Behaviour", EditorStyles.boldLabel);
+			EditorGUILayout.PropertyField(_detectSystemLanguage, new GUIContent("Detect System Language"));
+			EditorGUILayout.PropertyField(_missingTranslationText, new GUIContent("Missing Translation Text"));
+
+			bool loadLanguage = false;
+			string[] languages = manager.GetAvailableLanguages();
+			if (languages.Length > 0)
+			{
+				EditorGUILayout.Space();
+				EditorGUILayout.LabelField("Languages", EditorStyles.boldLabel);
+				_selectedLanguageIndex = Mathf.Clamp(_selectedLanguageIndex, 0, languages.Length - 1);
+				_selectedLanguageIndex = EditorGUILayout.Popup("Language", _selectedLanguageIndex, languages);
+				loadLanguage = GUILayout.Button("Load Language");
+				EditorGUILayout.LabelField("Active Language",
+					string.IsNullOrEmpty(manager.ActiveLanguage) ? "-" : manager.ActiveLanguage);
+			}
+
+			serializedObject.ApplyModifiedProperties();
+
+			if (loadFromWeb)
+				manager.LoadFromWeb(manager.RemoteUrl);
+			if (loadFromFile)
+				manager.LoadFromFile(manager.GetLocalFilePath(), manager.FileFormat);
+			if (loadLanguage)
+				manager.LoadLanguage(languages[_selectedLanguageIndex]);
 		}
 	}
 }
