@@ -1,8 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.Networking;
 using UnityEngine.Serialization;
 
 namespace UniversityOfGames.LocalizationToolkit
@@ -73,6 +76,10 @@ namespace UniversityOfGames.LocalizationToolkit
 		[Tooltip("Text returned when a translation key cannot be found.")]
 		private string _missingTranslationText = "Localized text not found";
 
+		[SerializeField]
+		[Tooltip("Invoked whenever a different language is activated.")]
+		private UnityEvent _onLanguageChanged = new UnityEvent();
+
 		private LocalizationData _data;
 		private Dictionary<string, string> _activeTranslations;
 		private string _activeLanguage = string.Empty;
@@ -111,6 +118,9 @@ namespace UniversityOfGames.LocalizationToolkit
 			get => _rememberLanguage;
 			set => _rememberLanguage = value;
 		}
+
+		/// <summary>Designer-facing event invoked whenever a different language is activated.</summary>
+		public UnityEvent OnLanguageChanged => _onLanguageChanged;
 
 		/// <summary>Key of the currently active language, or an empty string when nothing is loaded.</summary>
 		public string ActiveLanguage => _activeLanguage;
@@ -204,6 +214,61 @@ namespace UniversityOfGames.LocalizationToolkit
 			}
 		}
 
+		/// <summary>Downloads and loads localization data without blocking the main thread.</summary>
+		/// <param name="url">URL pointing to a .json, .xml or .csv file.</param>
+		/// <param name="onCompleted">Invoked with true when the data was loaded successfully.</param>
+		/// <remarks>
+		/// Runs as a coroutine in play mode, which also makes it WebGL friendly. In edit
+		/// mode it falls back to the blocking loader so inspector previews keep working.
+		/// </remarks>
+		public void LoadFromWebAsync(string url, Action<bool> onCompleted = null)
+		{
+			if (!RemoteFileLoader.TryGetFileFormatFromUrl(url, out LocalizationFileFormat format))
+			{
+				Debug.LogError("[LocalizationToolkit] The URL must point to a .json, .xml or .csv file.", this);
+				onCompleted?.Invoke(false);
+				return;
+			}
+
+			if (!Application.isPlaying)
+			{
+				LoadFromWeb(url);
+				onCompleted?.Invoke(IsLoaded);
+				return;
+			}
+
+			StartCoroutine(LoadFromWebRoutine(url, format, onCompleted));
+		}
+
+		private IEnumerator LoadFromWebRoutine(string url, LocalizationFileFormat format, Action<bool> onCompleted)
+		{
+			using (UnityWebRequest request = UnityWebRequest.Get(url))
+			{
+				request.timeout = RemoteFileLoader.TimeoutSeconds;
+				yield return request.SendWebRequest();
+
+				if (request.result != UnityWebRequest.Result.Success)
+				{
+					Debug.LogError($"[LocalizationToolkit] Failed to download '{url}': {request.error}", this);
+					onCompleted?.Invoke(false);
+					yield break;
+				}
+
+				bool success = false;
+				try
+				{
+					ApplyData(LocalizationData.Parse(request.downloadHandler.text.Trim(), format));
+					success = true;
+				}
+				catch (Exception exception)
+				{
+					Debug.LogError($"[LocalizationToolkit] Failed to parse localization data from '{url}': {exception.Message}", this);
+				}
+
+				onCompleted?.Invoke(success);
+			}
+		}
+
 		/// <summary>
 		/// Activates the given language and raises <see cref="LanguageChanged"/>.
 		/// Falls back to <see cref="DefaultLanguageKey"/> when the language is missing.
@@ -238,6 +303,7 @@ namespace UniversityOfGames.LocalizationToolkit
 			}
 
 			LanguageChanged?.Invoke();
+			_onLanguageChanged?.Invoke();
 		}
 
 		/// <summary>Returns the translation for the given key in the active language.</summary>
@@ -332,11 +398,20 @@ namespace UniversityOfGames.LocalizationToolkit
 		private void AutoLoad()
 		{
 			if (_localizationFile != null)
+			{
 				LoadFromTextAsset(_localizationFile);
+			}
 			else if (!string.IsNullOrWhiteSpace(_remoteUrl))
-				LoadFromWeb(_remoteUrl);
+			{
+				if (Application.isPlaying)
+					LoadFromWebAsync(_remoteUrl);
+				else
+					LoadFromWeb(_remoteUrl);
+			}
 			else if (!string.IsNullOrWhiteSpace(_localFileName))
+			{
 				LoadFromFile(GetLocalFilePath(), _fileFormat);
+			}
 		}
 
 		/// <summary>

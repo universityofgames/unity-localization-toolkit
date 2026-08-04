@@ -17,6 +17,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		private SerializedProperty _detectSystemLanguage;
 		private SerializedProperty _rememberLanguage;
 		private SerializedProperty _missingTranslationText;
+		private SerializedProperty _onLanguageChanged;
 		private int _selectedLanguageIndex;
 
 		private void OnEnable()
@@ -28,6 +29,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			_detectSystemLanguage = serializedObject.FindProperty("_detectSystemLanguage");
 			_rememberLanguage = serializedObject.FindProperty("_rememberLanguage");
 			_missingTranslationText = serializedObject.FindProperty("_missingTranslationText");
+			_onLanguageChanged = serializedObject.FindProperty("_onLanguageChanged");
 		}
 
 		public override void OnInspectorGUI()
@@ -61,6 +63,9 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			EditorGUILayout.PropertyField(_detectSystemLanguage, new GUIContent("Detect System Language"));
 			EditorGUILayout.PropertyField(_rememberLanguage, new GUIContent("Remember Language"));
 			EditorGUILayout.PropertyField(_missingTranslationText, new GUIContent("Missing Translation Text"));
+
+			EditorGUILayout.Space();
+			EditorGUILayout.PropertyField(_onLanguageChanged, new GUIContent("On Language Changed"));
 
 			bool loadLanguage = false;
 			string[] languages = manager.GetAvailableLanguages();
