@@ -70,15 +70,26 @@ developers, students and teachers all over the world.
 localization, localisation, translation, i18n, language, multi-language, AI translation,
 ChatGPT, Claude, plurals, CSV, Google Sheets, TextMeshPro, RTL, font, translate
 
-## Screenshot shot list
+## Screenshots
 
-1. Localization Editor with data loaded — statistics bars visible (hero shot).
-2. AI Translation section with profile assigned and the batch summary dialog.
-3. Demo scene in Polish with the flag, texts and open dropdown.
-4. Localized Image / Localized Font inspectors with language popups.
-5. Pseudo-locale in the demo scene (visible overflow markers).
-6. Google Sheets side by side with the synced editor table.
-7. Demo_Plurals scene showing "5 jabłek" with the counter.
+Rendered promo shots live in `docs/store/screenshots/` (1920×1080 PNG):
+
+| File | Content |
+|---|---|
+| `00_hero.png` | Hero banner: title, tagline, feature list, flag row |
+| `01_demo_english.png` / `02_demo_polish.png` / `03_demo_german.png` | Demo scene in three languages (texts + flag switch) |
+| `04_pseudo_locale.png` | Pseudo-locale revealing UI overflow |
+| `05_plurals_polish.png` | CLDR plurals: "5 jabłek" with the counter |
+| `06_formatting_polish.png` | Culture-aware score/currency/date formatting |
+| `07_objects_polish.png` | LocalizedObject switching a whole layout |
+| `08_audio_french.png` | LocalizedAudio voice-over scene |
+
+Still to capture manually in the editor (GUI-only):
+
+1. Localization Editor with data loaded — statistics bars visible.
+2. AI Translation section with a profile assigned and the batch summary dialog.
+3. Localized Image / Localized Font inspectors with language popups.
+4. Google Sheets side by side with the synced editor table.
 
 ## GIF storyboard (main media)
 
