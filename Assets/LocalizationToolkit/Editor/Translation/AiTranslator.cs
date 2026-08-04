@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
@@ -10,6 +11,14 @@ using UnityEngine.Networking;
 
 namespace UniversityOfGames.LocalizationToolkit.Editor
 {
+	/// <summary>Outcome of an AI translation request.</summary>
+	public enum AiTranslationStatus
+	{
+		Success,
+		Cancelled,
+		Failed
+	}
+
 	/// <summary>
 	/// Translates localization entries with an AI model (Anthropic Claude or OpenAI GPT).
 	/// Editor-only: the API key is provided by the user at edit time and is never
@@ -26,18 +35,50 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		/// <param name="sourceLanguage">Language the entries are written in.</param>
 		/// <param name="targetLanguage">Language to translate into.</param>
 		/// <param name="entries">Key-to-source-text pairs to translate.</param>
+		/// <param name="profile">Optional project profile adding game context, tone and a glossary.</param>
 		/// <returns>The complete prompt sent as the user message.</returns>
-		public static string BuildPrompt(string sourceLanguage, string targetLanguage, IDictionary<string, string> entries)
+		public static string BuildPrompt(string sourceLanguage, string targetLanguage,
+			IDictionary<string, string> entries, LocalizationAiProfile profile = null)
 		{
 			var builder = new StringBuilder();
 			builder.AppendLine("You are a professional game localization translator.");
 			builder.AppendLine($"Translate the following user interface strings from \"{sourceLanguage}\" to \"{targetLanguage}\".");
+
+			if (profile != null)
+			{
+				if (!string.IsNullOrWhiteSpace(profile.GameDescription))
+				{
+					builder.AppendLine();
+					builder.AppendLine("Game context: " + profile.GameDescription.Trim());
+				}
+
+				if (!string.IsNullOrWhiteSpace(profile.Tone))
+					builder.AppendLine("Tone of voice: " + profile.Tone.Trim());
+			}
+
 			builder.AppendLine();
 			builder.AppendLine("Rules:");
 			builder.AppendLine("- Return ONLY a valid JSON object that maps every key to its translated value. No markdown, no commentary.");
 			builder.AppendLine("- Keep every key exactly as provided and translate only the values.");
 			builder.AppendLine("- Preserve placeholders wrapped in curly braces, such as {name} or {score}, exactly as they appear.");
 			builder.AppendLine("- Keep the tone natural for game UI text in the target language.");
+
+			if (profile != null && profile.DoNotTranslate != null && profile.DoNotTranslate.Count > 0)
+			{
+				string terms = string.Join(", ", profile.DoNotTranslate
+					.Where(term => !string.IsNullOrWhiteSpace(term))
+					.Select(term => term.Trim()));
+				if (terms.Length > 0)
+					builder.AppendLine("- Never translate these terms; keep them exactly as written: " + terms + ".");
+			}
+
+			if (profile != null && !string.IsNullOrWhiteSpace(profile.ExtraInstructions))
+			{
+				builder.AppendLine();
+				builder.AppendLine("Additional instructions:");
+				builder.AppendLine(profile.ExtraInstructions.Trim());
+			}
+
 			builder.AppendLine();
 			builder.AppendLine("Strings to translate:");
 			builder.AppendLine(JsonConvert.SerializeObject(entries, Formatting.Indented));
@@ -141,7 +182,29 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			AiTranslationProvider provider, string apiKey, string model,
 			string sourceLanguage, string targetLanguage, IDictionary<string, string> entries)
 		{
-			string prompt = BuildPrompt(sourceLanguage, targetLanguage, entries);
+			AiTranslationStatus status = TranslateEntries(provider, apiKey, model,
+				sourceLanguage, targetLanguage, entries, out Dictionary<string, string> translations);
+			return status == AiTranslationStatus.Success ? translations : null;
+		}
+
+		/// <summary>Translates the given entries with the configured provider.</summary>
+		/// <param name="provider">AI provider to use.</param>
+		/// <param name="apiKey">API key of the user's provider account.</param>
+		/// <param name="model">Model identifier to request.</param>
+		/// <param name="sourceLanguage">Language the entries are written in.</param>
+		/// <param name="targetLanguage">Language to translate into.</param>
+		/// <param name="entries">Key-to-source-text pairs to translate.</param>
+		/// <param name="translations">The translated entries when the method returns <see cref="AiTranslationStatus.Success"/>.</param>
+		/// <param name="profile">Optional project profile adding game context, tone and a glossary.</param>
+		/// <returns>Whether the request succeeded, failed or was cancelled by the user.</returns>
+		/// <remarks>Blocks the editor while the request runs and shows a cancelable progress bar.</remarks>
+		public static AiTranslationStatus TranslateEntries(
+			AiTranslationProvider provider, string apiKey, string model,
+			string sourceLanguage, string targetLanguage, IDictionary<string, string> entries,
+			out Dictionary<string, string> translations, LocalizationAiProfile profile = null)
+		{
+			translations = null;
+			string prompt = BuildPrompt(sourceLanguage, targetLanguage, entries, profile);
 			string body = BuildRequestBody(provider, model, prompt);
 
 			using (UnityWebRequest request = CreateRequest(provider, apiKey, body))
@@ -161,7 +224,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 						{
 							request.Abort();
 							Debug.LogWarning("[LocalizationToolkit] AI translation cancelled by the user.");
-							return null;
+							return AiTranslationStatus.Cancelled;
 						}
 
 						Thread.Sleep(50);
@@ -175,18 +238,19 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				if (request.result != UnityWebRequest.Result.Success)
 				{
 					Debug.LogError($"[LocalizationToolkit] AI translation request failed: {request.error}\n{request.downloadHandler?.text}");
-					return null;
+					return AiTranslationStatus.Failed;
 				}
 
 				try
 				{
 					string text = ExtractResponseText(provider, request.downloadHandler.text);
-					return ParseTranslations(text);
+					translations = ParseTranslations(text);
+					return AiTranslationStatus.Success;
 				}
 				catch (Exception exception)
 				{
 					Debug.LogError($"[LocalizationToolkit] Failed to parse the AI translation response: {exception.Message}");
-					return null;
+					return AiTranslationStatus.Failed;
 				}
 			}
 		}

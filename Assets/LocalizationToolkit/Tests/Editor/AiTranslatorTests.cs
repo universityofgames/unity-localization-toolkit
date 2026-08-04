@@ -26,6 +26,38 @@ namespace UniversityOfGames.LocalizationToolkit.Tests
 		}
 
 		[Test]
+		public void BuildPrompt_WithProfile_IncludesContextToneGlossaryAndInstructions()
+		{
+			var profile = UnityEngine.ScriptableObject.CreateInstance<LocalizationAiProfile>();
+			try
+			{
+				profile.GameDescription = "A cozy farming RPG for casual players.";
+				profile.Tone = "warm and playful";
+				profile.DoNotTranslate.Add("Mana");
+				profile.DoNotTranslate.Add("XP");
+				profile.ExtraInstructions = "Keep strings short.";
+
+				string prompt = AiTranslator.BuildPrompt("English", "Polish", SampleEntries, profile);
+
+				Assert.That(prompt, Does.Contain("A cozy farming RPG"));
+				Assert.That(prompt, Does.Contain("warm and playful"));
+				Assert.That(prompt, Does.Contain("Mana, XP"));
+				Assert.That(prompt, Does.Contain("Keep strings short."));
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(profile);
+			}
+		}
+
+		[Test]
+		public void BuildPrompt_WithoutProfile_MatchesPlainPrompt()
+		{
+			Assert.That(AiTranslator.BuildPrompt("English", "Polish", SampleEntries, null),
+				Is.EqualTo(AiTranslator.BuildPrompt("English", "Polish", SampleEntries)));
+		}
+
+		[Test]
 		public void BuildRequestBody_ForClaude_UsesMessagesAndMaxTokens()
 		{
 			string body = AiTranslator.BuildRequestBody(AiTranslationProvider.Claude, "claude-opus-5", "prompt text");

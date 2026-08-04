@@ -23,6 +23,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 
 		private const string ApiKeyPrefsPrefix = "UniversityOfGames.LocalizationToolkit.ApiKey.";
 		private const string ModelPrefsPrefix = "UniversityOfGames.LocalizationToolkit.Model.";
+		private const string ProfilePrefsPrefix = "UniversityOfGames.LocalizationToolkit.AiProfile.";
 
 		private LocalizationData _data = new LocalizationData();
 		private LocalizationFileFormat _fileFormat;
@@ -40,6 +41,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		private string _aiModel = string.Empty;
 		private string _aiApiKey = string.Empty;
 		private bool _aiOverwriteExisting;
+		private LocalizationAiProfile _aiProfile;
 
 		private Vector2 _scrollPosition;
 		private string _lastEditedKey;
@@ -319,6 +321,9 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				_aiOverwriteExisting = EditorGUILayout.Toggle(
 					new GUIContent("Overwrite Existing", "Retranslate entries that already have a value."),
 					_aiOverwriteExisting);
+				_aiProfile = (LocalizationAiProfile)EditorGUILayout.ObjectField(
+					new GUIContent("AI Profile", "Optional: game context, tone and do-not-translate glossary. Create via Assets → Create → Localization Toolkit → AI Translation Profile."),
+					_aiProfile, typeof(LocalizationAiProfile), false);
 
 				EditorGUILayout.HelpBox(
 					"Translates entries of the edited language from the key source language. " +
@@ -343,11 +348,21 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 						MessageType.Warning);
 				}
 
-				using (new EditorGUI.DisabledScope(
-					string.IsNullOrWhiteSpace(_aiApiKey) || targetLanguage == sourceLanguage || string.IsNullOrEmpty(targetLanguage)))
+				using (new EditorGUILayout.HorizontalScope())
 				{
-					if (GUILayout.Button($"Translate '{targetLanguage}' With AI", GUILayout.Height(26f)))
-						TranslateSelectedLanguage(sourceLanguage, targetLanguage);
+					using (new EditorGUI.DisabledScope(
+						string.IsNullOrWhiteSpace(_aiApiKey) || targetLanguage == sourceLanguage || string.IsNullOrEmpty(targetLanguage)))
+					{
+						if (GUILayout.Button($"Translate '{targetLanguage}'", GUILayout.Height(26f)))
+							TranslateSelectedLanguage(sourceLanguage, targetLanguage);
+					}
+
+					using (new EditorGUI.DisabledScope(
+						string.IsNullOrWhiteSpace(_aiApiKey) || _languageNames.Length < 2))
+					{
+						if (GUILayout.Button("Translate All Languages", GUILayout.Height(26f)))
+							TranslateAllLanguages(sourceLanguage);
+					}
 				}
 
 				if (string.IsNullOrWhiteSpace(_aiApiKey))
@@ -359,6 +374,85 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		{
 			SaveAiPreferences();
 
+			Dictionary<string, string> entries = BuildEntriesToTranslate(sourceLanguage, targetLanguage);
+			if (entries.Count == 0)
+			{
+				EditorUtility.DisplayDialog("AI Translation",
+					$"There is nothing to translate: every '{targetLanguage}' entry already has a value. " +
+					"Enable 'Overwrite Existing' to retranslate them.", "OK");
+				return;
+			}
+
+			AiTranslationStatus status = AiTranslator.TranslateEntries(
+				_aiProvider, _aiApiKey.Trim(), ResolveModel(), sourceLanguage, targetLanguage, entries,
+				out Dictionary<string, string> translations, _aiProfile);
+
+			if (status != AiTranslationStatus.Success)
+				return;
+
+			int applied = ApplyTranslations(sourceLanguage, targetLanguage, translations);
+			Repaint();
+			Debug.Log($"[LocalizationToolkit] Applied {applied} AI translations to '{targetLanguage}'. Remember to save the data.");
+		}
+
+		private void TranslateAllLanguages(string sourceLanguage)
+		{
+			SaveAiPreferences();
+
+			string model = ResolveModel();
+			var summary = new System.Text.StringBuilder();
+			bool cancelled = false;
+
+			foreach (string targetLanguage in _languageNames)
+			{
+				if (targetLanguage == sourceLanguage)
+					continue;
+
+				Dictionary<string, string> entries = BuildEntriesToTranslate(sourceLanguage, targetLanguage);
+				if (entries.Count == 0)
+				{
+					summary.AppendLine($"{targetLanguage}: already complete");
+					continue;
+				}
+
+				AiTranslationStatus status = AiTranslator.TranslateEntries(
+					_aiProvider, _aiApiKey.Trim(), model, sourceLanguage, targetLanguage, entries,
+					out Dictionary<string, string> translations, _aiProfile);
+
+				if (status == AiTranslationStatus.Failed)
+				{
+					// One retry with a short backoff, e.g. after a rate limit response.
+					System.Threading.Thread.Sleep(2000);
+					status = AiTranslator.TranslateEntries(
+						_aiProvider, _aiApiKey.Trim(), model, sourceLanguage, targetLanguage, entries,
+						out translations, _aiProfile);
+				}
+
+				if (status == AiTranslationStatus.Cancelled)
+				{
+					cancelled = true;
+					summary.AppendLine($"{targetLanguage}: cancelled");
+					break;
+				}
+
+				if (status == AiTranslationStatus.Failed)
+				{
+					summary.AppendLine($"{targetLanguage}: FAILED (see the Console for details)");
+					continue;
+				}
+
+				int applied = ApplyTranslations(sourceLanguage, targetLanguage, translations);
+				summary.AppendLine($"{targetLanguage}: {applied} entries translated");
+			}
+
+			Repaint();
+			EditorUtility.DisplayDialog("AI Translation",
+				(cancelled ? "Batch translation cancelled.\n\n" : "Batch translation finished.\n\n") + summary +
+				"\nRemember to save the data.", "OK");
+		}
+
+		private Dictionary<string, string> BuildEntriesToTranslate(string sourceLanguage, string targetLanguage)
+		{
 			Dictionary<string, string> sourceTable = _data.Languages[sourceLanguage];
 			Dictionary<string, string> targetTable = _data.Languages[targetLanguage];
 
@@ -374,20 +468,13 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				entries[entry.Key] = entry.Value;
 			}
 
-			if (entries.Count == 0)
-			{
-				EditorUtility.DisplayDialog("AI Translation",
-					$"There is nothing to translate: every '{targetLanguage}' entry already has a value. " +
-					"Enable 'Overwrite Existing' to retranslate them.", "OK");
-				return;
-			}
+			return entries;
+		}
 
-			string model = string.IsNullOrWhiteSpace(_aiModel) ? _aiProvider.GetDefaultModel() : _aiModel.Trim();
-			Dictionary<string, string> translations = AiTranslator.TranslateEntries(
-				_aiProvider, _aiApiKey.Trim(), model, sourceLanguage, targetLanguage, entries);
-
-			if (translations == null)
-				return;
+		private int ApplyTranslations(string sourceLanguage, string targetLanguage, Dictionary<string, string> translations)
+		{
+			Dictionary<string, string> sourceTable = _data.Languages[sourceLanguage];
+			Dictionary<string, string> targetTable = _data.Languages[targetLanguage];
 
 			int applied = 0;
 			foreach (KeyValuePair<string, string> translation in translations)
@@ -399,20 +486,35 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				applied++;
 			}
 
-			Repaint();
-			Debug.Log($"[LocalizationToolkit] Applied {applied} AI translations to '{targetLanguage}'. Remember to save the data.");
+			return applied;
+		}
+
+		private string ResolveModel()
+		{
+			return string.IsNullOrWhiteSpace(_aiModel) ? _aiProvider.GetDefaultModel() : _aiModel.Trim();
 		}
 
 		private void LoadAiPreferences()
 		{
 			_aiApiKey = EditorPrefs.GetString(ApiKeyPrefsPrefix + _aiProvider, string.Empty);
 			_aiModel = EditorPrefs.GetString(ModelPrefsPrefix + _aiProvider, _aiProvider.GetDefaultModel());
+
+			if (_aiProfile == null)
+			{
+				string guid = EditorPrefs.GetString(ProfilePrefsPrefix + PlayerSettings.productGUID, string.Empty);
+				if (!string.IsNullOrEmpty(guid))
+					_aiProfile = AssetDatabase.LoadAssetAtPath<LocalizationAiProfile>(AssetDatabase.GUIDToAssetPath(guid));
+			}
 		}
 
 		private void SaveAiPreferences()
 		{
 			EditorPrefs.SetString(ApiKeyPrefsPrefix + _aiProvider, _aiApiKey.Trim());
 			EditorPrefs.SetString(ModelPrefsPrefix + _aiProvider, string.IsNullOrWhiteSpace(_aiModel) ? _aiProvider.GetDefaultModel() : _aiModel.Trim());
+
+			string profilePath = _aiProfile != null ? AssetDatabase.GetAssetPath(_aiProfile) : string.Empty;
+			EditorPrefs.SetString(ProfilePrefsPrefix + PlayerSettings.productGUID,
+				string.IsNullOrEmpty(profilePath) ? string.Empty : AssetDatabase.AssetPathToGUID(profilePath));
 		}
 
 		// --- Entries -----------------------------------------------------------
