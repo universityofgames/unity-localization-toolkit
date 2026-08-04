@@ -37,6 +37,9 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		private string _searchFilter = string.Empty;
 
 		private bool _showAiTranslation = true;
+		private bool _showStatistics;
+		private List<string> _auditMissingKeys;
+		private List<string> _auditUnusedKeys;
 		private AiTranslationProvider _aiProvider;
 		private string _aiModel = string.Empty;
 		private string _aiApiKey = string.Empty;
@@ -76,6 +79,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			DrawDataSection();
 			DrawLanguagesSection();
 			DrawAiTranslationSection();
+			DrawStatisticsSection();
 			DrawEntriesSection();
 			GUILayout.Space(6);
 		}
@@ -263,7 +267,27 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 							AddNewLanguage();
 					}
 				}
+
+				if (GUILayout.Button(new GUIContent("Generate Pseudo Language",
+					"Create a 'Pseudo' language with accented, padded text to test UI overflow and missing glyphs.")))
+					GeneratePseudoLanguage();
 			}
+		}
+
+		private void GeneratePseudoLanguage()
+		{
+			Dictionary<string, string> keySource = _data.Languages[KeySourceLanguage];
+			var pseudo = new Dictionary<string, string>();
+			foreach (KeyValuePair<string, string> entry in keySource)
+				pseudo[entry.Key] = PseudoLocalizer.Generate(entry.Value);
+
+			bool existed = _data.Languages.ContainsKey(PseudoLocalizer.LanguageKey);
+			_data.Languages[PseudoLocalizer.LanguageKey] = pseudo;
+
+			EditorUtility.DisplayDialog("Pseudo Localization",
+				$"{(existed ? "Updated" : "Created")} the '{PseudoLocalizer.LanguageKey}' language with {pseudo.Count} entries. " +
+				"Select it as the edited language and preview it in your scenes to spot overflowing layouts.", "OK");
+			Repaint();
 		}
 
 		private string[] GetLanguagesAvailableToAdd()
@@ -517,6 +541,98 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				string.IsNullOrEmpty(profilePath) ? string.Empty : AssetDatabase.AssetPathToGUID(profilePath));
 		}
 
+		// --- Statistics & audit --------------------------------------------------
+
+		private void DrawStatisticsSection()
+		{
+			if (!HasData)
+				return;
+
+			using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+			{
+				_showStatistics = EditorGUILayout.Foldout(_showStatistics, "Statistics", true, EditorStyles.foldoutHeader);
+				if (!_showStatistics)
+					return;
+
+				foreach (LocalizationAudit.LanguageStatistics statistics in
+					LocalizationAudit.GetStatistics(_data, KeySourceLanguage))
+				{
+					using (new EditorGUILayout.HorizontalScope())
+					{
+						EditorGUILayout.LabelField(statistics.Language, GUILayout.Width(150f));
+						Rect barRect = GUILayoutUtility.GetRect(120f, 16f, GUILayout.ExpandWidth(true));
+						EditorGUI.ProgressBar(barRect, statistics.Completion,
+							$"{statistics.Filled}/{statistics.Total}  ({statistics.Completion:P0})");
+					}
+				}
+
+				GUILayout.Space(6);
+
+				if (GUILayout.Button(new GUIContent("Scan Project For Key Usage",
+					"Compare the keys used by LocalizedText components in prefabs and Build Settings scenes with the loaded data.")))
+					ScanProjectForKeyUsage();
+
+				if (_auditMissingKeys != null && _auditUnusedKeys != null)
+				{
+					EditorGUILayout.LabelField(
+						$"Used in content but missing from data: {_auditMissingKeys.Count}   ·   In data but never used: {_auditUnusedKeys.Count}",
+						EditorStyles.miniBoldLabel);
+
+					if (_auditMissingKeys.Count > 0)
+					{
+						EditorGUILayout.HelpBox("Missing: " + Summarize(_auditMissingKeys), MessageType.Warning);
+						if (GUILayout.Button("Add Missing Keys To Table"))
+						{
+							AddKeysToAllLanguages(_auditMissingKeys);
+							_auditMissingKeys = new List<string>();
+							Repaint();
+						}
+					}
+
+					if (_auditUnusedKeys.Count > 0)
+						EditorGUILayout.HelpBox("Unused (informational): " + Summarize(_auditUnusedKeys), MessageType.None);
+				}
+			}
+		}
+
+		private void ScanProjectForKeyUsage()
+		{
+			if (!EditorUtility.DisplayDialog("Scan Project",
+				"This scans every prefab and opens every enabled scene from Build Settings, then restores your current scene setup. Continue?",
+				"Scan", "Cancel"))
+				return;
+
+			HashSet<string> contentKeys = LocalizedTextKeyScanner.CollectFromPrefabs();
+			HashSet<string> sceneKeys = LocalizedTextKeyScanner.CollectFromBuildScenes();
+			if (sceneKeys == null)
+				return;
+
+			contentKeys.UnionWith(sceneKeys);
+			contentKeys.UnionWith(LocalizedTextKeyScanner.CollectFromLoadedScenes());
+
+			_auditMissingKeys = LocalizationAudit.GetKeysMissingFromData(contentKeys, _data, KeySourceLanguage);
+			_auditUnusedKeys = LocalizationAudit.GetUnusedKeys(contentKeys, _data, KeySourceLanguage);
+		}
+
+		private static string Summarize(List<string> keys)
+		{
+			const int limit = 40;
+			string joined = string.Join(", ", keys.Take(limit));
+			return keys.Count > limit ? joined + $", … and {keys.Count - limit} more" : joined;
+		}
+
+		private void AddKeysToAllLanguages(IEnumerable<string> keys)
+		{
+			foreach (string key in keys)
+			{
+				foreach (Dictionary<string, string> table in _data.Languages.Values)
+				{
+					if (!table.ContainsKey(key))
+						table[key] = string.Empty;
+				}
+			}
+		}
+
 		// --- Entries -----------------------------------------------------------
 
 		private void DrawEntriesSection()
@@ -538,9 +654,9 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 					EditorGUILayout.LabelField($"Entries ({totalKeys})", EditorStyles.boldLabel, GUILayout.Width(150f));
 					GUILayout.FlexibleSpace();
 					_searchFilter = EditorGUILayout.TextField(_searchFilter, EditorStyles.toolbarSearchField, GUILayout.Width(200f));
-					if (GUILayout.Button(new GUIContent("Collect Scene Keys",
-						"Scan every LocalizedText in the loaded scenes and add its key to the table."), GUILayout.Width(130f)))
-						CollectKeysFromLoadedScenes();
+					if (GUILayout.Button(new GUIContent("Collect Keys ▾",
+						"Scan LocalizedText components and add their keys to the table."), GUILayout.Width(110f)))
+						ShowCollectKeysMenu();
 					if (GUILayout.Button("Add Entry", GUILayout.Width(80f)))
 						AddNewEntry();
 				}
@@ -667,32 +783,47 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			}
 		}
 
-		private void CollectKeysFromLoadedScenes()
+		private void ShowCollectKeysMenu()
 		{
-			LocalizedText[] texts = UnityEngine.Object.FindObjectsByType<LocalizedText>(FindObjectsInactive.Include);
+			var menu = new GenericMenu();
+			menu.AddItem(new GUIContent("From Loaded Scenes"), false,
+				() => CollectKeys(LocalizedTextKeyScanner.CollectFromLoadedScenes(), "the loaded scenes"));
+			menu.AddItem(new GUIContent("From Project Prefabs"), false,
+				() => CollectKeys(LocalizedTextKeyScanner.CollectFromPrefabs(), "the project prefabs"));
+			menu.AddItem(new GUIContent("From Build Settings Scenes"), false,
+				() => CollectKeysFromBuildScenes(false));
+			menu.AddItem(new GUIContent("From Everything"), false,
+				() => CollectKeysFromBuildScenes(true));
+			menu.ShowAsContext();
+		}
 
-			Dictionary<string, string> keySource = _data.Languages[KeySourceLanguage];
-			var newKeys = new HashSet<string>();
-			foreach (LocalizedText text in texts)
-			{
-				string key = text.Key?.Trim();
-				if (!string.IsNullOrEmpty(key) && !keySource.ContainsKey(key))
-					newKeys.Add(key);
-			}
+		private void CollectKeysFromBuildScenes(bool includePrefabs)
+		{
+			if (!EditorUtility.DisplayDialog("Collect Keys",
+				"This opens every enabled scene from Build Settings and then restores your current scene setup. Continue?",
+				"Collect", "Cancel"))
+				return;
 
-			foreach (string key in newKeys)
-			{
-				foreach (Dictionary<string, string> table in _data.Languages.Values)
-				{
-					if (!table.ContainsKey(key))
-						table[key] = string.Empty;
-				}
-			}
+			HashSet<string> keys = LocalizedTextKeyScanner.CollectFromBuildScenes();
+			if (keys == null)
+				return;
 
-			EditorUtility.DisplayDialog("Collect Scene Keys",
-				newKeys.Count > 0
-					? $"Added {newKeys.Count} new key(s) collected from {texts.Length} LocalizedText component(s) in the loaded scenes."
-					: $"No new keys found. Scanned {texts.Length} LocalizedText component(s) in the loaded scenes.",
+			if (includePrefabs)
+				keys.UnionWith(LocalizedTextKeyScanner.CollectFromPrefabs());
+			keys.UnionWith(LocalizedTextKeyScanner.CollectFromLoadedScenes());
+
+			CollectKeys(keys, includePrefabs ? "the whole project" : "the Build Settings scenes");
+		}
+
+		private void CollectKeys(HashSet<string> contentKeys, string sourceLabel)
+		{
+			List<string> missing = LocalizationAudit.GetKeysMissingFromData(contentKeys, _data, KeySourceLanguage);
+			AddKeysToAllLanguages(missing);
+
+			EditorUtility.DisplayDialog("Collect Keys",
+				missing.Count > 0
+					? $"Added {missing.Count} new key(s) out of {contentKeys.Count} found in {sourceLabel}."
+					: $"No new keys found. {contentKeys.Count} key(s) from {sourceLabel} are already in the table.",
 				"OK");
 			Repaint();
 		}
