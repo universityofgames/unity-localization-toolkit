@@ -2,6 +2,17 @@
 
 All notable changes to the Localization Toolkit are documented in this file.
 
+## [2.1.0] - 2026-08-04
+
+### Added
+- Remember Language: the player's choice is stored in PlayerPrefs and restored on startup (saved choice → system language → default).
+- AI Translation Profile asset: game description, tone of voice and a do-not-translate glossary are injected into every AI prompt.
+- Translate All Languages: one click translates every language sequentially, with per-language progress, an automatic retry and a summary report.
+- Statistics section with per-language completion bars and a project-wide key-usage audit (missing and unused keys, one-click fix).
+- Collect Keys from four sources: loaded scenes, project prefabs, Build Settings scenes or everything.
+- Pseudo-localization generator for UI overflow and glyph testing.
+- Demo scene now showcases LocalizedImage with generated flag sprites.
+
 ## [2.0.0] - 2026-08-04
 
 ### Added

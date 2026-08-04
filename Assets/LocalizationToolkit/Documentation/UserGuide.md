@@ -43,6 +43,7 @@ The central component; add exactly one per scene.
 | **File URL** | Remote `.json`, `.xml` or `.csv` file downloaded on startup. Used when no file asset is set. |
 | **File Name / File Format** | Name (without extension) and format of a file in `Assets/StreamingAssets`. Used when neither of the above is set. |
 | **Detect System Language** | Selects the player's system language after loading (falls back to `default`). |
+| **Remember Language** | Stores the player's choice in `PlayerPrefs` and restores it on startup. The saved choice wins over system-language detection. |
 | **Missing Translation Text** | Text returned for unknown keys. |
 
 The inspector also offers *Load* buttons for every source and a language selector for
@@ -111,13 +112,22 @@ Open **Tools → Localization Toolkit → Localization Editor**.
 - **Localization Data** — load a file asset, a local file (`Open File...`) or a remote
   URL; create new data; save in any format (`Save As...` + *Save Format*).
 - **Languages** — choose the edited language, add languages from the `SystemLanguage`
-  list, or remove one (with confirmation).
+  list, or remove one (with confirmation). **Generate Pseudo Language** creates a
+  `Pseudo` test language: accented characters reveal missing glyphs, ~30% padding
+  reveals layouts that break on long translations, and ⟦brackets⟧ reveal truncation.
+  `{token}` placeholders are preserved. Delete the language before shipping, or keep
+  it — it is inert at runtime.
 - **AI Translation** — see section 6.
+- **Statistics** — per-language completion bars, plus **Scan Project For Key Usage**:
+  compares the keys referenced by `Localized Text` components in prefabs and Build
+  Settings scenes against the loaded data, listing keys that are missing from the data
+  (with a one-click fix) and keys that are never used.
 - **Entries** — the key/value table for the edited language, with a search filter,
   entry counter and per-row removal. Key renames propagate to every language.
-  **Collect Scene Keys** scans every `Localized Text` component in the loaded scenes
-  and adds any keys that are missing from the table — set the keys up in your UI first,
-  collect them with one click, then fill in (or AI-translate) the values.
+  **Collect Keys** gathers `Localized Text` keys from your choice of sources — loaded
+  scenes, project prefabs, Build Settings scenes or everything — and adds the missing
+  ones to the table: set the keys up in your UI first, collect them with one click,
+  then fill in (or AI-translate) the values.
 
 ## 6. AI Translation
 
@@ -130,11 +140,19 @@ AI provider account:
 3. Select the target language as the *Edited Language* and press
    **Translate '<language>' With AI**.
 
+For production-quality output, create an **AI Translation Profile**
+(*Assets → Create → Localization Toolkit → AI Translation Profile*) and assign it in
+the AI section. The profile feeds every prompt with your game's description, the tone
+of voice and a glossary of terms that must never be translated (proper names, stats
+like *XP* or *Mana*). Use **Translate All Languages** to fill every language in one
+run — languages are translated sequentially with a progress bar, a failed language is
+retried once automatically, and a summary reports what happened per language.
+
 Behavior and guarantees:
 
 - Only **empty** entries are translated by default; enable *Overwrite Existing* to
   retranslate everything.
-- Keys and `{token}` placeholders are preserved exactly.
+- Keys and `{token}` placeholders are preserved exactly; glossary terms are kept verbatim.
 - Results land in the entries table for review — nothing is saved until you save.
 - The API key is stored in `EditorPrefs` on your machine only. It is **never** written
   to project files, version control or builds. Requests are sent directly from the
