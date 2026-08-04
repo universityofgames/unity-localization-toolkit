@@ -1,26 +1,116 @@
 ![cover_banner copy](https://user-images.githubusercontent.com/10097678/163688958-3e3251eb-f506-4038-b62f-8b0e0b9663c6.png)
 
-# Localization toolkit for Unity 3D
+# Localization Toolkit for Unity
 
-Quickly add multi-language support to your games using our localization toolkit. This lightweight asset allows you to localize any text. Easly load CSV or XML files into your game!
+A lightweight, production-ready localization system for Unity 6. Add multi-language support to your game in minutes: keep your translations in JSON, XML or CSV files, edit them in a dedicated editor window, and let your UI update itself whenever the language changes.
 
-<img width="701" alt="Zrzut ekranu 2022-03-8 o 13 09 01" src="https://user-images.githubusercontent.com/10097678/157235530-1da24364-2858-43c5-8482-0cf5b356605c.png">
+<img width="701" alt="Localization Toolkit inspector" src="https://user-images.githubusercontent.com/10097678/157235530-1da24364-2858-43c5-8482-0cf5b356605c.png">
 
-If your text needs to include dynamic names and numbers then simply add tokens like {Age} to your text. These will automatically be replaced by values you set in the LocalizationText component!
+## Features
 
-💡 The language of your game will automatically be detected when the user starts the game, you can even pick the method to determine this!
+- **Three file formats** — load and save translations as JSON, XML or CSV.
+- **Local & remote sources** — read files from `StreamingAssets` or download them from any URL.
+- **Automatic language detection** — optionally match the player's system language on startup.
+- **UI Text and TextMeshPro** — `LocalizedText` works with both the legacy `Text` component and `TMP_Text`.
+- **Language dropdown** — a ready-made component that lists available languages and switches between them.
+- **Dynamic values** — replace `{token}` placeholders in translations straight from the API.
+- **Built-in editor** — create, edit and save localization files without leaving Unity.
+- **Edit mode preview** — switch languages in the inspector and see your scene texts update instantly.
+- **Test coverage** — the data layer ships with an edit mode test suite.
 
-<img width="700" alt="Zrzut ekranu 2022-03-8 o 13 09 18" src="https://user-images.githubusercontent.com/10097678/157235552-5a05ef19-88eb-4198-b97f-1ef005f95011.png">
+## Requirements
 
-We have added the ability to load any CSV or XML files. Use can automatically load localizations from text files to speed up your workflow!
+- Unity **6000.5** or newer
+- Packages: `com.unity.ugui`, `com.unity.nuget.newtonsoft-json` (both declared in the project manifest)
 
-<img width="695" alt="Zrzut ekranu 2022-03-8 o 13 09 33" src="https://user-images.githubusercontent.com/10097678/157235561-144d2190-4257-4b67-870a-2a4bd93be797.png">
+## Quick Start
 
-**Easy To Use** ― Drag and drop the languages you want to support, add translations for each phrase, and update your text/images/etc to be localized, all in just a few clicks! Just add the Localization component to your UI Text GameObject, and it will automatically localize the text!
+1. **Add the manager** — create an empty GameObject and add the `Localization Manager` component (*Add Component → Localization Toolkit → Localization Manager*).
+2. **Point it at your data** — enter a file name (e.g. `lang`) and format for a file in `Assets/StreamingAssets`, or paste a remote URL.
+3. **Localize your texts** — add the `Localized Text` component to any `Text` or `TextMeshPro` object and assign a translation key.
+4. **Optional** — add the `Language Dropdown` component to a `Dropdown` or `TMP_Dropdown` to let players switch languages at runtime.
+
+Press Play — texts are resolved automatically, and every language change refreshes all localized components.
+
+## Localization Files
+
+Every file defines a set of languages, each mapping translation keys to values. The `default` language is used as a fallback.
+
+**JSON**
+
+```json
+{
+  "languages": {
+    "default": { "hello": "Hello", "bye": "Bye" },
+    "Polish":  { "hello": "Cześć", "bye": "Pa!" }
+  }
+}
+```
+
+**XML**
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<translations>
+  <default>
+    <hello>Hello</hello>
+    <bye>Bye</bye>
+  </default>
+  <Polish>
+    <hello>Cześć</hello>
+    <bye>Pa!</bye>
+  </Polish>
+</translations>
+```
+
+**CSV**
+
+```csv
+key,default,Polish
+hello,Hello,Cześć
+bye,Bye,Pa!
+```
+
+## Localization Editor
+
+Open **Tools → Localization Toolkit → Localization Editor** to create new localization data, load an existing file (local or remote), add or remove languages and keys, and save the result in any supported format.
+
+<img width="695" alt="Localization editor window" src="https://user-images.githubusercontent.com/10097678/157235561-144d2190-4257-4b67-870a-2a4bd93be797.png">
+
+## Scripting API
+
+```csharp
+using UniversityOfGames.LocalizationToolkit;
+
+// Read a translation for the active language
+string title = LocalizationManager.Instance.GetLocalizedValue("hello");
+
+// Replace {token} placeholders with dynamic values
+string welcome = LocalizationManager.Instance.GetLocalizedValue(
+    "welcome_player", ("name", playerName), ("level", level.ToString()));
+
+// Switch the language at runtime
+LocalizationManager.Instance.LoadLanguage("Polish");
+
+// React to language changes
+LocalizationManager.LanguageChanged += () => Debug.Log("Language switched!");
+```
+
+## Project Structure
+
+```
+Assets/LocalizationToolkit/
+├── Editor/       Custom inspectors and the Localization Editor window
+├── Runtime/
+│   ├── Core/        LocalizationManager, LocalizationData, file formats
+│   ├── Components/  LocalizedText, LanguageDropdown
+│   └── Utilities/   Web loading, CSV parsing, token formatting
+└── Samples/      Demo scene (sample data lives in Assets/StreamingAssets)
+```
 
 * * *
 
-### Check our others Unity package
+### Check our other Unity packages
 ➡️ You can also find our other solutions on the **[Unity Asset Store](https://assetstore.unity.com/publishers/25633)**
 
 * * *
@@ -32,12 +122,12 @@ University of Games is a research center - great place for indie game developers
 To learn more, you can check our blog:
 - http://www.universityofgames.net
 
-Our social media: 
-- https://www.facebook.com/uniwesytetgier 
+Our social media:
+- https://www.facebook.com/uniwesytetgier
 - http://www.twitter.com/uniwersytetgier
 - http://www.instagram.com/uniwersytetgier
 
-Contact us directly via email: 
+Contact us directly via email:
 - hello@universityofgames.net
 
 If you have any questions or issues with your Unity project(s), feel free to contact!
