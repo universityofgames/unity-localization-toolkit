@@ -2,6 +2,16 @@
 
 All notable changes to the Localization Toolkit are documented in this file.
 
+## [2.2.0] - 2026-08-04
+
+### Added
+- CLDR plural support: `GetPlural(key, count)` with per-language rules (Polish, East Slavic, Czech/Slovak, French, Romanian, Arabic, CJK) and suffixed keys `.one/.few/.many/.other`.
+- `LocalizedFont` component: per-language TMP and legacy font overrides with a size multiplier — CJK and Cyrillic ready.
+- Google Sheets sync: publish a sheet as CSV and sync it into the Localization Editor with one click.
+- `LoadFromWebAsync`: coroutine-based remote loading (WebGL friendly); auto-load uses it in play mode.
+- `On Language Changed` UnityEvent on the manager for no-code reactions.
+- `LoadData` API for injecting in-memory localization data.
+
 ## [2.1.0] - 2026-08-04
 
 ### Added

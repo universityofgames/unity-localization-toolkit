@@ -59,7 +59,15 @@ automatically on every language change; in the editor it previews language switc
 Fills a `Dropdown` or `TMP_Dropdown` with all available languages, pre-selects the active
 one and switches the language when the player picks another entry. No wiring required.
 
-### 3.4 Localized Image
+### 3.4 Localized Font
+
+Swaps the font of a `TMP_Text` or legacy `Text` component per language — essential for
+CJK, Cyrillic, Thai or Arabic, whose glyphs are usually missing from Latin font assets.
+Add an override per language (TMP font asset and/or legacy font, plus an optional size
+multiplier for dense scripts); languages without an override use the default font,
+captured automatically when the default fields are left empty.
+
+### 3.5 Localized Image
 
 Swaps the sprite of an `Image` or `SpriteRenderer` to match the active language — for
 localized logos, flags, banners or any artwork containing text. Assign a **Default
@@ -104,6 +112,36 @@ hello,Hello,Cześć
 
 Language names should match Unity's `SystemLanguage` names (`English`, `Polish`,
 `German`, ...) so that automatic system-language detection can find them.
+
+### Plural forms
+
+Store plural variants as suffixed keys and read them with `GetPlural(key, count)` —
+the correct CLDR category is picked per language, `{count}` is always available:
+
+```json
+"Polish": {
+  "apples.one":  "{count} jabłko",
+  "apples.few":  "{count} jabłka",
+  "apples.many": "{count} jabłek"
+}
+```
+
+```csharp
+LocalizationManager.Instance.GetPlural("apples", 5); // "5 jabłek"
+```
+
+Lookup falls back from the exact category to `.other` and finally to the bare key, so
+languages without plural distinctions (Japanese, Chinese, ...) only need `.other` or a
+plain entry. The suffixes `.zero .one .two .few .many .other` are reserved — avoid them
+in ordinary key names.
+
+### Google Sheets
+
+Keep translations in a shared spreadsheet: in Google Sheets choose
+*File → Share → Publish to web*, pick **Comma-separated values (.csv)** and copy the
+link. Paste it into the **Google Sheet URL** field of the Localization Editor and press
+**Sync** whenever the sheet changes. The first column must be `key`, followed by one
+column per language (same layout as the CSV format above).
 
 ## 5. Localization Editor Window
 
@@ -189,11 +227,20 @@ LocalizationManager.LanguageChanged += OnLanguageChanged;
 string[] languages = LocalizationManager.Instance.GetAvailableLanguages();
 string[] keys = LocalizationManager.Instance.GetKeys();
 
+// Plurals (CLDR rules per language, {count} token built in)
+string apples = LocalizationManager.Instance.GetPlural("apples", 5);
+
 // Load data from code
 LocalizationManager.Instance.LoadFromTextAsset(myTextAsset);
-LocalizationManager.Instance.LoadFromWeb("https://example.com/lang.json");
+LocalizationManager.Instance.LoadFromWeb("https://example.com/lang.json");          // blocking (editor tooling)
+LocalizationManager.Instance.LoadFromWebAsync("https://example.com/lang.json",      // coroutine, WebGL friendly
+    success => Debug.Log("Loaded: " + success));
 LocalizationManager.Instance.LoadFromFile(path, LocalizationFileFormat.Csv);
+LocalizationManager.Instance.LoadData(myLocalizationData);
 ```
+
+Designers can also react to language switches without code through the manager's
+**On Language Changed** UnityEvent in the inspector.
 
 Working with files directly:
 
@@ -212,8 +259,9 @@ The placeholder text is configurable on the manager.
 (TextMeshPro UGUI and 3D), `Dropdown`, `TMP_Dropdown`, and — for localized artwork —
 `Image` and `SpriteRenderer` via `Localized Image`.
 
-**Does remote loading work on WebGL?** No — blocking downloads are not available on
-WebGL. Use a `TextAsset` (recommended) on that platform.
+**Does remote loading work on WebGL?** Yes — use `LoadFromWebAsync` (the automatic
+startup load already uses it in play mode). Only the blocking `LoadFromWeb` is
+unavailable on WebGL.
 
 **Where should my own localization files live?** Anywhere in `Assets` when using the
 File Asset workflow, or in `Assets/StreamingAssets` when loading by file name.
