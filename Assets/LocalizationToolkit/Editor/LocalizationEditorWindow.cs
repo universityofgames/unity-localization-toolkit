@@ -24,11 +24,13 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		private const string ApiKeyPrefsPrefix = "UniversityOfGames.LocalizationToolkit.ApiKey.";
 		private const string ModelPrefsPrefix = "UniversityOfGames.LocalizationToolkit.Model.";
 		private const string ProfilePrefsPrefix = "UniversityOfGames.LocalizationToolkit.AiProfile.";
+		private const string SheetsPrefsPrefix = "UniversityOfGames.LocalizationToolkit.SheetUrl.";
 
 		private LocalizationData _data = new LocalizationData();
 		private LocalizationFileFormat _fileFormat;
 		private TextAsset _fileAsset;
 		private string _fileUrl = string.Empty;
+		private string _sheetsUrl = string.Empty;
 
 		private string[] _languageNames = Array.Empty<string>();
 		private string[] _languagesAvailableToAdd = Array.Empty<string>();
@@ -71,6 +73,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		private void OnEnable()
 		{
 			LoadAiPreferences();
+			_sheetsUrl = EditorPrefs.GetString(SheetsPrefsPrefix + PlayerSettings.productGUID, string.Empty);
 		}
 
 		private void OnGUI()
@@ -112,6 +115,24 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 					{
 						if (GUILayout.Button("Load", GUILayout.Width(SideButtonWidth)))
 							LoadFromWeb();
+					}
+				}
+
+				using (new EditorGUILayout.HorizontalScope())
+				{
+					EditorGUI.BeginChangeCheck();
+					_sheetsUrl = EditorGUILayout.TextField(
+						new GUIContent("Google Sheet URL", "URL of a sheet published as CSV (File → Share → Publish to web → CSV)."),
+						_sheetsUrl);
+					if (EditorGUI.EndChangeCheck())
+						EditorPrefs.SetString(SheetsPrefsPrefix + PlayerSettings.productGUID, _sheetsUrl.Trim());
+
+					using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(_sheetsUrl)))
+					{
+						if (GUILayout.Button("Sync", GUILayout.Width(SideButtonWidth)))
+							SyncFromGoogleSheets();
+						if (GUILayout.Button("Open", GUILayout.Width(50f)))
+							Application.OpenURL(_sheetsUrl.Trim());
 					}
 				}
 
@@ -171,6 +192,32 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			{
 				EditorUtility.DisplayDialog("Localization Toolkit",
 					$"Could not parse the downloaded file:\n{exception.Message}", "OK");
+			}
+		}
+
+		private void SyncFromGoogleSheets()
+		{
+			string rawData = RemoteFileLoader.DownloadText(_sheetsUrl.Trim());
+			if (string.IsNullOrEmpty(rawData))
+			{
+				EditorUtility.DisplayDialog("Google Sheets",
+					"The sheet could not be downloaded. Make sure it is published to the web (File → Share → Publish to web → CSV) and the URL is correct.",
+					"OK");
+				return;
+			}
+
+			try
+			{
+				ResetSelection();
+				_data = LocalizationData.Parse(rawData, LocalizationFileFormatUtility.DetectFormat(rawData));
+				EditorUtility.DisplayDialog("Google Sheets",
+					$"Synced {_data.Languages.Count} language(s) with {_data.Languages[KeySourceLanguage].Count} key(s) from the sheet.",
+					"OK");
+			}
+			catch (Exception exception)
+			{
+				EditorUtility.DisplayDialog("Google Sheets",
+					$"Could not parse the downloaded sheet:\n{exception.Message}", "OK");
 			}
 		}
 
