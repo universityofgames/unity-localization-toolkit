@@ -37,6 +37,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		private int _selectedLanguageIndex;
 		private int _languageToAddIndex;
 		private string _searchFilter = string.Empty;
+		private bool _showOnlyEmpty;
 
 		private bool _showAiTranslation = true;
 		private bool _showStatistics;
@@ -610,6 +611,15 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 						Rect barRect = GUILayoutUtility.GetRect(120f, 16f, GUILayout.ExpandWidth(true));
 						EditorGUI.ProgressBar(barRect, statistics.Completion,
 							$"{statistics.Filled}/{statistics.Total}  ({statistics.Completion:P0})");
+
+						if (GUILayout.Button(new GUIContent("Edit",
+							"Select this language in the table, filtered to its empty entries."), GUILayout.Width(44f)))
+						{
+							_selectedLanguageIndex = System.Array.IndexOf(_languageNames, statistics.Language);
+							_searchFilter = string.Empty;
+							_showOnlyEmpty = statistics.Filled < statistics.Total;
+							GUI.FocusControl(null);
+						}
 					}
 				}
 
@@ -700,6 +710,9 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				{
 					EditorGUILayout.LabelField($"Entries ({totalKeys})", EditorStyles.boldLabel, GUILayout.Width(150f));
 					GUILayout.FlexibleSpace();
+					_showOnlyEmpty = GUILayout.Toggle(_showOnlyEmpty,
+						new GUIContent("Only Empty", "Show only keys whose value is empty in the edited language."),
+						EditorStyles.miniButton, GUILayout.Width(80f));
 					_searchFilter = EditorGUILayout.TextField(_searchFilter, EditorStyles.toolbarSearchField, GUILayout.Width(200f));
 					if (GUILayout.Button(new GUIContent("Collect Keys ▾",
 						"Scan LocalizedText components and add their keys to the table."), GUILayout.Width(110f)))
@@ -736,12 +749,21 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			string keySourceLanguage = KeySourceLanguage;
 			int totalKeys = _data.Languages[keySourceLanguage].Count;
 
+			string filterLanguage = _languageNames[Mathf.Clamp(_selectedLanguageIndex, 0, _languageNames.Length - 1)];
 			var localizationKeys = _data.Languages[keySourceLanguage].Keys.ToList();
 			localizationKeys.Sort();
 			if (!string.IsNullOrEmpty(_searchFilter))
 			{
 				localizationKeys = localizationKeys
 					.Where(key => key.IndexOf(_searchFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+					.ToList();
+			}
+
+			if (_showOnlyEmpty)
+			{
+				Dictionary<string, string> filterTable = _data.Languages[filterLanguage];
+				localizationKeys = localizationKeys
+					.Where(key => !filterTable.TryGetValue(key, out string value) || string.IsNullOrWhiteSpace(value))
 					.ToList();
 			}
 
