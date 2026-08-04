@@ -435,8 +435,11 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				{
 					EditorGUILayout.LabelField($"Entries ({totalKeys})", EditorStyles.boldLabel, GUILayout.Width(150f));
 					GUILayout.FlexibleSpace();
-					_searchFilter = EditorGUILayout.TextField(_searchFilter, EditorStyles.toolbarSearchField, GUILayout.Width(220f));
-					if (GUILayout.Button("Add Entry", GUILayout.Width(90f)))
+					_searchFilter = EditorGUILayout.TextField(_searchFilter, EditorStyles.toolbarSearchField, GUILayout.Width(200f));
+					if (GUILayout.Button(new GUIContent("Collect Scene Keys",
+						"Scan every LocalizedText in the loaded scenes and add its key to the table."), GUILayout.Width(130f)))
+						CollectKeysFromLoadedScenes();
+					if (GUILayout.Button("Add Entry", GUILayout.Width(80f)))
 						AddNewEntry();
 				}
 
@@ -560,6 +563,36 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				foreach (Dictionary<string, string> table in _data.Languages.Values)
 					table.Remove(key);
 			}
+		}
+
+		private void CollectKeysFromLoadedScenes()
+		{
+			LocalizedText[] texts = UnityEngine.Object.FindObjectsByType<LocalizedText>(FindObjectsInactive.Include);
+
+			Dictionary<string, string> keySource = _data.Languages[KeySourceLanguage];
+			var newKeys = new HashSet<string>();
+			foreach (LocalizedText text in texts)
+			{
+				string key = text.Key?.Trim();
+				if (!string.IsNullOrEmpty(key) && !keySource.ContainsKey(key))
+					newKeys.Add(key);
+			}
+
+			foreach (string key in newKeys)
+			{
+				foreach (Dictionary<string, string> table in _data.Languages.Values)
+				{
+					if (!table.ContainsKey(key))
+						table[key] = string.Empty;
+				}
+			}
+
+			EditorUtility.DisplayDialog("Collect Scene Keys",
+				newKeys.Count > 0
+					? $"Added {newKeys.Count} new key(s) collected from {texts.Length} LocalizedText component(s) in the loaded scenes."
+					: $"No new keys found. Scanned {texts.Length} LocalizedText component(s) in the loaded scenes.",
+				"OK");
+			Repaint();
 		}
 
 		private void AddNewEntry()
