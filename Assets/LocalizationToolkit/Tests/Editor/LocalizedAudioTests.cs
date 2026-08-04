@@ -42,8 +42,9 @@ namespace UniversityOfGames.LocalizationToolkit.Tests
 		[Test]
 		public void GetClipForLanguage_WithoutOverride_FallsBackToDefault()
 		{
-			Assert.That(CreateComponent().GetClipForLanguage("German"), Is.EqualTo(_defaultClip));
-			Assert.That(CreateComponent().GetClipForLanguage(null), Is.EqualTo(_defaultClip));
+			LocalizedAudio localized = CreateComponent();
+			Assert.That(localized.GetClipForLanguage("German"), Is.EqualTo(_defaultClip));
+			Assert.That(localized.GetClipForLanguage(null), Is.EqualTo(_defaultClip));
 		}
 
 		[Test]

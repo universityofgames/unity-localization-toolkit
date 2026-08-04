@@ -42,8 +42,9 @@ namespace UniversityOfGames.LocalizationToolkit.Tests
 		[Test]
 		public void GetTargetForLanguage_WithoutEntry_FallsBackToDefault()
 		{
-			Assert.That(CreateComponent().GetTargetForLanguage("German"), Is.EqualTo(_defaultTarget));
-			Assert.That(CreateComponent().GetTargetForLanguage(null), Is.EqualTo(_defaultTarget));
+			LocalizedObject localized = CreateComponent();
+			Assert.That(localized.GetTargetForLanguage("German"), Is.EqualTo(_defaultTarget));
+			Assert.That(localized.GetTargetForLanguage(null), Is.EqualTo(_defaultTarget));
 		}
 
 		[Test]
