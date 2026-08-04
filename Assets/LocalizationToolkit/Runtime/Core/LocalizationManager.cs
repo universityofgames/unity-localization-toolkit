@@ -22,6 +22,10 @@ namespace UniversityOfGames.LocalizationToolkit
 		/// <summary>Raised whenever a different language is loaded.</summary>
 		public static event Action LanguageChanged;
 
+		[SerializeField]
+		[Tooltip("Localization file asset (JSON, XML or CSV). Takes precedence over the remote URL and the StreamingAssets file.")]
+		private TextAsset _localizationFile;
+
 		[SerializeField, FormerlySerializedAs("fileURL")]
 		[Tooltip("Optional URL of a remote localization file. Takes precedence over the local file.")]
 		private string _remoteUrl = string.Empty;
@@ -45,6 +49,13 @@ namespace UniversityOfGames.LocalizationToolkit
 		private LocalizationData _data;
 		private Dictionary<string, string> _activeTranslations;
 		private string _activeLanguage = string.Empty;
+
+		/// <summary>Localization file asset (JSON, XML or CSV).</summary>
+		public TextAsset LocalizationFile
+		{
+			get => _localizationFile;
+			set => _localizationFile = value;
+		}
 
 		/// <summary>URL of the remote localization file.</summary>
 		public string RemoteUrl
@@ -83,6 +94,26 @@ namespace UniversityOfGames.LocalizationToolkit
 		public string GetLocalFilePath()
 		{
 			return Path.Combine(Application.streamingAssetsPath, _localFileName + "." + _fileFormat.ToExtension());
+		}
+
+		/// <summary>Loads localization data from a text asset; the format is detected automatically.</summary>
+		/// <param name="asset">Text asset containing JSON, XML or CSV localization data.</param>
+		public void LoadFromTextAsset(TextAsset asset)
+		{
+			if (asset == null)
+			{
+				Debug.LogError("[LocalizationToolkit] No localization file asset has been assigned.", this);
+				return;
+			}
+
+			try
+			{
+				ApplyData(LocalizationData.Parse(asset.text, LocalizationFileFormatUtility.DetectFormat(asset.text)));
+			}
+			catch (Exception exception)
+			{
+				Debug.LogError($"[LocalizationToolkit] Failed to parse localization asset '{asset.name}': {exception.Message}", this);
+			}
 		}
 
 		/// <summary>Loads localization data from a file on disk.</summary>
@@ -193,7 +224,9 @@ namespace UniversityOfGames.LocalizationToolkit
 
 		private void AutoLoad()
 		{
-			if (!string.IsNullOrWhiteSpace(_remoteUrl))
+			if (_localizationFile != null)
+				LoadFromTextAsset(_localizationFile);
+			else if (!string.IsNullOrWhiteSpace(_remoteUrl))
 				LoadFromWeb(_remoteUrl);
 			else if (!string.IsNullOrWhiteSpace(_localFileName))
 				LoadFromFile(GetLocalFilePath(), _fileFormat);

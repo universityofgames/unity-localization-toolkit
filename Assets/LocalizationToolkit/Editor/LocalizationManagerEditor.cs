@@ -10,6 +10,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 	[CustomEditor(typeof(LocalizationManager))]
 	public class LocalizationManagerEditor : UnityEditor.Editor
 	{
+		private SerializedProperty _localizationFile;
 		private SerializedProperty _remoteUrl;
 		private SerializedProperty _localFileName;
 		private SerializedProperty _fileFormat;
@@ -19,6 +20,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 
 		private void OnEnable()
 		{
+			_localizationFile = serializedObject.FindProperty("_localizationFile");
 			_remoteUrl = serializedObject.FindProperty("_remoteUrl");
 			_localFileName = serializedObject.FindProperty("_localFileName");
 			_fileFormat = serializedObject.FindProperty("_fileFormat");
@@ -31,6 +33,13 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			serializedObject.Update();
 			var manager = (LocalizationManager)target;
 
+			EditorGUILayout.LabelField("Localization File (Recommended)", EditorStyles.boldLabel);
+			EditorGUILayout.PropertyField(_localizationFile, new GUIContent("File Asset"));
+			bool loadFromAsset;
+			using (new EditorGUI.DisabledScope(_localizationFile.objectReferenceValue == null))
+				loadFromAsset = GUILayout.Button("Load File Asset");
+
+			EditorGUILayout.Space();
 			EditorGUILayout.LabelField("Remote Source", EditorStyles.boldLabel);
 			EditorGUILayout.PropertyField(_remoteUrl, new GUIContent("File URL"));
 			bool loadFromWeb;
@@ -65,6 +74,8 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 
 			serializedObject.ApplyModifiedProperties();
 
+			if (loadFromAsset)
+				manager.LoadFromTextAsset(manager.LocalizationFile);
 			if (loadFromWeb)
 				manager.LoadFromWeb(manager.RemoteUrl);
 			if (loadFromFile)

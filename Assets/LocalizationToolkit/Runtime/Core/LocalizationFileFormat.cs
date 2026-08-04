@@ -25,6 +25,27 @@ namespace UniversityOfGames.LocalizationToolkit
 			}
 		}
 
+		/// <summary>Detects the format of raw localization text by inspecting its first significant character.</summary>
+		/// <param name="content">Raw localization file contents.</param>
+		public static LocalizationFileFormat DetectFormat(string content)
+		{
+			if (!string.IsNullOrEmpty(content))
+			{
+				foreach (char character in content)
+				{
+					if (char.IsWhiteSpace(character) || character == '\uFEFF')
+						continue;
+
+					if (character == '{' || character == '[')
+						return LocalizationFileFormat.Json;
+
+					return character == '<' ? LocalizationFileFormat.Xml : LocalizationFileFormat.Csv;
+				}
+			}
+
+			return LocalizationFileFormat.Json;
+		}
+
 		/// <summary>Tries to resolve a localization file format from a file extension.</summary>
 		/// <param name="extension">File extension, with or without the leading dot.</param>
 		/// <param name="format">Resolved format when the method returns true.</param>

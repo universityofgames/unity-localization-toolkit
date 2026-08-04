@@ -32,6 +32,17 @@ namespace UniversityOfGames.LocalizationToolkit.Tests
 			}
 		}
 
+		[TestCase("{\"languages\":{}}", LocalizationFileFormat.Json)]
+		[TestCase("  \n {\"languages\":{}}", LocalizationFileFormat.Json)]
+		[TestCase("﻿{\"languages\":{}}", LocalizationFileFormat.Json)]
+		[TestCase("<?xml version=\"1.0\"?><translations/>", LocalizationFileFormat.Xml)]
+		[TestCase("  <translations/>", LocalizationFileFormat.Xml)]
+		[TestCase("key,default\nhello,Hi", LocalizationFileFormat.Csv)]
+		public void DetectFormat_RecognizesContentByFirstSignificantCharacter(string content, LocalizationFileFormat expected)
+		{
+			Assert.That(LocalizationFileFormatUtility.DetectFormat(content), Is.EqualTo(expected));
+		}
+
 		[TestCase("https://example.com/lang.json", LocalizationFileFormat.Json)]
 		[TestCase("https://example.com/lang.xml?version=2", LocalizationFileFormat.Xml)]
 		[TestCase("https://example.com/lang.csv#section", LocalizationFileFormat.Csv)]

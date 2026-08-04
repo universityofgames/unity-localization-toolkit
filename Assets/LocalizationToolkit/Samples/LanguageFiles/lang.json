@@ -1,0 +1,46 @@
+{
+  "languages": {
+    "default": {
+      "title": "Localization Toolkit",
+      "welcome": "Welcome!",
+      "description": "Switch the language using the dropdown below.",
+      "language_label": "Language",
+      "bye": "See you soon!"
+    },
+    "English": {
+      "title": "Localization Toolkit",
+      "welcome": "Welcome!",
+      "description": "Switch the language using the dropdown below.",
+      "language_label": "Language",
+      "bye": "See you soon!"
+    },
+    "Polish": {
+      "title": "Localization Toolkit",
+      "welcome": "Witaj!",
+      "description": "Zmień język, korzystając z listy poniżej.",
+      "language_label": "Język",
+      "bye": "Do zobaczenia!"
+    },
+    "German": {
+      "title": "Localization Toolkit",
+      "welcome": "Willkommen!",
+      "description": "Wechsle die Sprache über das Dropdown-Menü unten.",
+      "language_label": "Sprache",
+      "bye": "Bis bald!"
+    },
+    "Spanish": {
+      "title": "Localization Toolkit",
+      "welcome": "¡Bienvenido!",
+      "description": "Cambia el idioma con el menú desplegable de abajo.",
+      "language_label": "Idioma",
+      "bye": "¡Hasta pronto!"
+    },
+    "French": {
+      "title": "Localization Toolkit",
+      "welcome": "Bienvenue !",
+      "description": "Changez la langue à l'aide du menu déroulant ci-dessous.",
+      "language_label": "Langue",
+      "bye": "À bientôt !"
+    }
+  }
+}

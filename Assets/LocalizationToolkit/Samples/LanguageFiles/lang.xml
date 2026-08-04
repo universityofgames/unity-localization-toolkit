@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<translations>
+  <default>
+    <title>Localization Toolkit</title>
+    <welcome>Welcome!</welcome>
+    <description>Switch the language using the dropdown below.</description>
+    <language_label>Language</language_label>
+    <bye>See you soon!</bye>
+  </default>
+  <English>
+    <title>Localization Toolkit</title>
+    <welcome>Welcome!</welcome>
+    <description>Switch the language using the dropdown below.</description>
+    <language_label>Language</language_label>
+    <bye>See you soon!</bye>
+  </English>
+  <Polish>
+    <title>Localization Toolkit</title>
+    <welcome>Witaj!</welcome>
+    <description>Zmień język, korzystając z listy poniżej.</description>
+    <language_label>Język</language_label>
+    <bye>Do zobaczenia!</bye>
+  </Polish>
+  <German>
+    <title>Localization Toolkit</title>
+    <welcome>Willkommen!</welcome>
+    <description>Wechsle die Sprache über das Dropdown-Menü unten.</description>
+    <language_label>Sprache</language_label>
+    <bye>Bis bald!</bye>
+  </German>
+  <Spanish>
+    <title>Localization Toolkit</title>
+    <welcome>¡Bienvenido!</welcome>
+    <description>Cambia el idioma con el menú desplegable de abajo.</description>
+    <language_label>Idioma</language_label>
+    <bye>¡Hasta pronto!</bye>
+  </Spanish>
+  <French>
+    <title>Localization Toolkit</title>
+    <welcome>Bienvenue !</welcome>
+    <description>Changez la langue à l'aide du menu déroulant ci-dessous.</description>
+    <language_label>Langue</language_label>
+    <bye>À bientôt !</bye>
+  </French>
+</translations>
