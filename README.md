@@ -13,7 +13,9 @@ A lightweight, production-ready localization system for Unity 6. Add multi-langu
 - **AI translation** — translate missing entries with Claude (Anthropic) or GPT (OpenAI) straight from the Localization Editor, using your own API key.
 - **Automatic language detection** — optionally match the player's system language on startup.
 - **UI Text and TextMeshPro** — `LocalizedText` works with both the legacy `Text` component and `TMP_Text`.
+- **Localized images** — `LocalizedImage` swaps sprites per language on `Image` and `SpriteRenderer` (logos, flags, banners).
 - **Language dropdown** — a ready-made component that lists available languages and switches between them.
+- **One-click key collection** — gather the keys of every `LocalizedText` in your scenes straight into the editor table.
 - **Dynamic values** — replace `{token}` placeholders in translations straight from the API.
 - **Built-in editor** — create, edit and save localization files without leaving Unity.
 - **Edit mode preview** — switch languages in the inspector and see your scene texts update instantly.

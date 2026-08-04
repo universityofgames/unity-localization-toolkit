@@ -58,6 +58,15 @@ automatically on every language change; in the editor it previews language switc
 Fills a `Dropdown` or `TMP_Dropdown` with all available languages, pre-selects the active
 one and switches the language when the player picks another entry. No wiring required.
 
+### 3.4 Localized Image
+
+Swaps the sprite of an `Image` or `SpriteRenderer` to match the active language — for
+localized logos, flags, banners or any artwork containing text. Assign a **Default
+Sprite** and add an override per language that needs different artwork; languages
+without an override fall back to the default. The inspector offers a language popup per
+override (fed by the loaded localization data), and language switches preview live in
+the Scene view.
+
 ## 4. Localization Files
 
 Every file defines a set of languages, each mapping translation keys to values. The
@@ -106,6 +115,9 @@ Open **Tools → Localization Toolkit → Localization Editor**.
 - **AI Translation** — see section 6.
 - **Entries** — the key/value table for the edited language, with a search filter,
   entry counter and per-row removal. Key renames propagate to every language.
+  **Collect Scene Keys** scans every `Localized Text` component in the loaded scenes
+  and adds any keys that are missing from the table — set the keys up in your UI first,
+  collect them with one click, then fill in (or AI-translate) the values.
 
 ## 6. AI Translation
 
@@ -178,8 +190,9 @@ string csv = data.ToCsv();
 language. Check the key spelling and make sure the `default` language contains it.
 The placeholder text is configurable on the manager.
 
-**Which text components are supported?** Legacy `UnityEngine.UI.Text`, `TMP_Text`
-(TextMeshPro UGUI and 3D), `Dropdown` and `TMP_Dropdown`.
+**Which components are supported?** Legacy `UnityEngine.UI.Text`, `TMP_Text`
+(TextMeshPro UGUI and 3D), `Dropdown`, `TMP_Dropdown`, and — for localized artwork —
+`Image` and `SpriteRenderer` via `Localized Image`.
 
 **Does remote loading work on WebGL?** No — blocking downloads are not available on
 WebGL. Use a `TextAsset` (recommended) on that platform.

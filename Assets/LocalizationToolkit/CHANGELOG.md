@@ -5,6 +5,8 @@ All notable changes to the Localization Toolkit are documented in this file.
 ## [2.0.0] - 2026-08-04
 
 ### Added
+- `LocalizedImage` component: per-language sprite overrides for `Image` and `SpriteRenderer`, with a dedicated inspector.
+- Collect Scene Keys: one click gathers the keys of every `LocalizedText` in the loaded scenes into the Localization Editor.
 - AI translation in the Localization Editor: translate missing entries with Claude (Anthropic) or GPT (OpenAI) using your own API key, stored in EditorPrefs only.
 - Loading localization data directly from a `TextAsset` with automatic format detection — the new recommended workflow.
 - CSV support alongside JSON and XML, including a RFC 4180 compliant parser and writer.
