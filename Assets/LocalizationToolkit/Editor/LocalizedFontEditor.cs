@@ -1,4 +1,3 @@
-using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -33,28 +32,18 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			EditorGUILayout.Space();
 			EditorGUILayout.LabelField("Language Overrides", EditorStyles.boldLabel);
 
-			LocalizationManager manager = LocalizationManager.Instance;
-			string[] languages = manager != null ? manager.GetAvailableLanguages() : Array.Empty<string>();
+			string[] languages = LocalizationEditorGui.GetAvailableLanguages();
 
 			for (int i = 0; i < _overrides.arraySize; i++)
 			{
 				SerializedProperty element = _overrides.GetArrayElementAtIndex(i);
-				SerializedProperty language = element.FindPropertyRelative("Language");
 
 				using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
 				{
 					using (new EditorGUILayout.HorizontalScope())
 					{
-						if (languages.Length > 0)
-						{
-							int index = Mathf.Max(0, Array.IndexOf(languages, language.stringValue));
-							index = EditorGUILayout.Popup("Language", index, languages);
-							language.stringValue = languages[index];
-						}
-						else
-						{
-							language.stringValue = EditorGUILayout.TextField("Language", language.stringValue);
-						}
+						LocalizationEditorGui.DrawLanguageField(
+							"Language", element.FindPropertyRelative("Language"), languages);
 
 						if (GUILayout.Button("-", GUILayout.Width(24f)))
 						{
@@ -72,12 +61,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			if (GUILayout.Button("Add Override"))
 				_overrides.arraySize++;
 
-			if (languages.Length == 0)
-			{
-				EditorGUILayout.HelpBox(
-					"Load localization data in a LocalizationManager to pick languages from a list.",
-					MessageType.Info);
-			}
+			LocalizationEditorGui.DrawNoLanguagesHint(languages);
 
 			if (serializedObject.ApplyModifiedProperties())
 				((LocalizedFont)target).Refresh();

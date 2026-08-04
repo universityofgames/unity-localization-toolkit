@@ -4,18 +4,18 @@ using UnityEngine;
 namespace UniversityOfGames.LocalizationToolkit.Editor
 {
 	/// <summary>
-	/// Custom inspector for <see cref="LocalizedImage"/> that offers a language popup
-	/// per sprite override, fed by the data loaded in the <see cref="LocalizationManager"/>.
+	/// Custom inspector for <see cref="LocalizedAudio"/> that offers a language popup
+	/// per clip override, fed by the data loaded in the <see cref="LocalizationManager"/>.
 	/// </summary>
-	[CustomEditor(typeof(LocalizedImage))]
-	public class LocalizedImageEditor : UnityEditor.Editor
+	[CustomEditor(typeof(LocalizedAudio))]
+	public class LocalizedAudioEditor : UnityEditor.Editor
 	{
-		private SerializedProperty _defaultSprite;
+		private SerializedProperty _defaultClip;
 		private SerializedProperty _overrides;
 
 		private void OnEnable()
 		{
-			_defaultSprite = serializedObject.FindProperty("_defaultSprite");
+			_defaultClip = serializedObject.FindProperty("_defaultClip");
 			_overrides = serializedObject.FindProperty("_overrides");
 		}
 
@@ -23,7 +23,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		{
 			serializedObject.Update();
 
-			EditorGUILayout.PropertyField(_defaultSprite, new GUIContent("Default Sprite"));
+			EditorGUILayout.PropertyField(_defaultClip, new GUIContent("Default Clip"));
 
 			EditorGUILayout.Space();
 			EditorGUILayout.LabelField("Language Overrides", EditorStyles.boldLabel);
@@ -38,7 +38,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				{
 					LocalizationEditorGui.DrawLanguageField(
 						element.FindPropertyRelative("Language"), languages, GUILayout.Width(160f));
-					EditorGUILayout.PropertyField(element.FindPropertyRelative("Sprite"), GUIContent.none);
+					EditorGUILayout.PropertyField(element.FindPropertyRelative("Clip"), GUIContent.none);
 
 					if (GUILayout.Button("-", GUILayout.Width(24f)))
 					{
@@ -54,7 +54,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			LocalizationEditorGui.DrawNoLanguagesHint(languages);
 
 			if (serializedObject.ApplyModifiedProperties())
-				((LocalizedImage)target).Refresh();
+				((LocalizedAudio)target).Refresh();
 		}
 	}
 }
