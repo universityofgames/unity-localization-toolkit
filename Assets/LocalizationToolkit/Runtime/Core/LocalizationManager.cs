@@ -36,6 +36,9 @@ namespace UniversityOfGames.LocalizationToolkit
 		/// <summary>Language key used as a fallback when a requested language is unavailable.</summary>
 		public const string DefaultLanguageKey = "default";
 
+		/// <summary>PlayerPrefs key under which the player's language choice is stored.</summary>
+		public const string LanguagePlayerPrefsKey = "UoG.LocalizationToolkit.Language";
+
 		/// <summary>
 		/// Raised whenever a different language is activated. <see cref="LocalizedText"/>
 		/// components subscribe to this event to refresh themselves automatically.
@@ -61,6 +64,10 @@ namespace UniversityOfGames.LocalizationToolkit
 		[SerializeField]
 		[Tooltip("Select the player's system language automatically after the data is loaded.")]
 		private bool _detectSystemLanguage = true;
+
+		[SerializeField]
+		[Tooltip("Remember the player's language choice in PlayerPrefs and restore it on startup.")]
+		private bool _rememberLanguage = true;
 
 		[SerializeField]
 		[Tooltip("Text returned when a translation key cannot be found.")]
@@ -96,6 +103,13 @@ namespace UniversityOfGames.LocalizationToolkit
 		{
 			get => _fileFormat;
 			set => _fileFormat = value;
+		}
+
+		/// <summary>Remember the player's language choice in PlayerPrefs and restore it on startup.</summary>
+		public bool RememberLanguage
+		{
+			get => _rememberLanguage;
+			set => _rememberLanguage = value;
 		}
 
 		/// <summary>Key of the currently active language, or an empty string when nothing is loaded.</summary>
@@ -203,6 +217,13 @@ namespace UniversityOfGames.LocalizationToolkit
 
 			_activeLanguage = languageKey;
 			_activeTranslations = translations;
+
+			if (_rememberLanguage && Application.isPlaying)
+			{
+				PlayerPrefs.SetString(LanguagePlayerPrefsKey, _activeLanguage);
+				PlayerPrefs.Save();
+			}
+
 			LanguageChanged?.Invoke();
 		}
 
@@ -273,10 +294,37 @@ namespace UniversityOfGames.LocalizationToolkit
 				LoadFromFile(GetLocalFilePath(), _fileFormat);
 		}
 
+		/// <summary>
+		/// Resolves the language to activate on startup: the saved choice first, then the
+		/// system language, then <see cref="DefaultLanguageKey"/>.
+		/// </summary>
+		/// <param name="savedLanguage">Language previously chosen by the player, or null.</param>
+		/// <param name="systemLanguage">The player's system language name.</param>
+		/// <param name="detectSystemLanguage">Whether the system language may be used.</param>
+		/// <param name="availableLanguages">Language keys present in the loaded data.</param>
+		/// <returns>The language key that should be activated.</returns>
+		public static string ResolveStartupLanguage(string savedLanguage, string systemLanguage,
+			bool detectSystemLanguage, ICollection<string> availableLanguages)
+		{
+			if (!string.IsNullOrEmpty(savedLanguage) && availableLanguages.Contains(savedLanguage))
+				return savedLanguage;
+
+			if (detectSystemLanguage && !string.IsNullOrEmpty(systemLanguage) && availableLanguages.Contains(systemLanguage))
+				return systemLanguage;
+
+			return DefaultLanguageKey;
+		}
+
 		private void ApplyData(LocalizationData data)
 		{
 			_data = data;
-			LoadLanguage(_detectSystemLanguage ? Application.systemLanguage.ToString() : DefaultLanguageKey);
+
+			string savedLanguage = _rememberLanguage && Application.isPlaying
+				? PlayerPrefs.GetString(LanguagePlayerPrefsKey, null)
+				: null;
+
+			LoadLanguage(ResolveStartupLanguage(
+				savedLanguage, Application.systemLanguage.ToString(), _detectSystemLanguage, _data.Languages.Keys));
 		}
 	}
 }

@@ -15,6 +15,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		private SerializedProperty _localFileName;
 		private SerializedProperty _fileFormat;
 		private SerializedProperty _detectSystemLanguage;
+		private SerializedProperty _rememberLanguage;
 		private SerializedProperty _missingTranslationText;
 		private int _selectedLanguageIndex;
 
@@ -25,6 +26,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			_localFileName = serializedObject.FindProperty("_localFileName");
 			_fileFormat = serializedObject.FindProperty("_fileFormat");
 			_detectSystemLanguage = serializedObject.FindProperty("_detectSystemLanguage");
+			_rememberLanguage = serializedObject.FindProperty("_rememberLanguage");
 			_missingTranslationText = serializedObject.FindProperty("_missingTranslationText");
 		}
 
@@ -57,6 +59,7 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			EditorGUILayout.Space();
 			EditorGUILayout.LabelField("Behaviour", EditorStyles.boldLabel);
 			EditorGUILayout.PropertyField(_detectSystemLanguage, new GUIContent("Detect System Language"));
+			EditorGUILayout.PropertyField(_rememberLanguage, new GUIContent("Remember Language"));
 			EditorGUILayout.PropertyField(_missingTranslationText, new GUIContent("Missing Translation Text"));
 
 			bool loadLanguage = false;
