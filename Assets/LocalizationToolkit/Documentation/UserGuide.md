@@ -19,6 +19,9 @@ window, and let your UI update itself whenever the language changes.
 The `Tests` folder is optional at runtime — it compiles only in the editor when the
 Unity Test Framework is installed. You can exclude it from builds-only workflows freely.
 
+New to the package? Open **Tools → Localization Toolkit → Welcome** — it creates a
+configured manager, opens the demo scenes and links every guide from one window.
+
 ## 2. Quick Start (60 seconds)
 
 1. Create an empty GameObject and add **Localization Toolkit → Localization Manager**.
@@ -30,6 +33,16 @@ Unity Test Framework is installed. You can exclude it from builds-only workflows
 4. Optionally add **Localization Toolkit → Language Dropdown** to a `Dropdown` or
    `TMP_Dropdown` — it fills itself with the available languages.
 5. Press Play. Open `Samples/Demo.unity` at any time to see a complete working setup.
+
+### Sample scenes
+
+| Scene | Shows |
+|---|---|
+| `Samples/Demo.unity` | The full overview: localized texts, flag image, language dropdown |
+| `Samples/Demo_Plurals.unity` | CLDR plural forms with a live counter (`GetPlural`) |
+| `Samples/Demo_Formatting.unity` | Culture-aware numbers, currency and dates (`FormatLocalized`) |
+| `Samples/Demo_Objects.unity` | `LocalizedObject` switching whole layouts per language |
+| `Samples/Demo_Audio.unity` | `LocalizedAudio` playing a different clip per language |
 
 ## 3. Components
 
@@ -67,7 +80,19 @@ Add an override per language (TMP font asset and/or legacy font, plus an optiona
 multiplier for dense scripts); languages without an override use the default font,
 captured automatically when the default fields are left empty.
 
-### 3.5 Localized Image
+### 3.5 Localized Audio
+
+Swaps the clip of an `AudioSource` per language — for localized voice-overs and spoken
+tutorials. Assign a default clip and per-language overrides; when the language changes
+during playback, the new clip restarts from the beginning.
+
+### 3.6 Localized Object
+
+Keeps exactly one GameObject active per language — for language-specific layouts or
+decorations that go beyond a text or sprite swap. Configure one object per language
+plus a default; activation runs on enable and on every language change (play mode).
+
+### 3.7 Localized Image
 
 Swaps the sprite of an `Image` or `SpriteRenderer` to match the active language — for
 localized logos, flags, banners or any artwork containing text. Assign a **Default
@@ -134,6 +159,27 @@ Lookup falls back from the exact category to `.other` and finally to the bare ke
 languages without plural distinctions (Japanese, Chinese, ...) only need `.other` or a
 plain entry. The suffixes `.zero .one .two .few .many .other` are reserved — avoid them
 in ordinary key names.
+
+### Culture-aware formatting
+
+`FormatLocalized` formats `{token:format}` placeholders with the active language's
+culture — standard .NET format strings apply:
+
+```json
+"stats_line": "Score: {score:N0} · Reward: {reward:C} · Today: {date:d}"
+```
+
+```csharp
+manager.FormatLocalized("stats_line", ("score", 987654), ("reward", 49.99), ("date", DateTime.Now));
+// Polish → "Wynik: 987 654 · Nagroda: 49,99 zł · Dziś: 04.08.2026"
+```
+
+### Right-to-left languages
+
+The manager keeps a list of right-to-left languages (Arabic and Hebrew by default).
+While one is active, `LocalizedText` enables TextMeshPro's RTL mode and mirrors left/
+right alignment automatically. Note: full Arabic glyph shaping is TextMeshPro's
+responsibility — use a font asset with Arabic support.
 
 ### Google Sheets
 

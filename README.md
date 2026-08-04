@@ -14,10 +14,14 @@ A lightweight, production-ready localization system for Unity 6. Add multi-langu
 - **Drag & drop setup** — assign a localization `TextAsset` directly in the inspector (format detected automatically); `StreamingAssets` files and remote URLs are also supported.
 - **AI translation** — translate missing entries with Claude (Anthropic) or GPT (OpenAI) straight from the Localization Editor, using your own API key.
 - **Automatic language detection** — optionally match the player's system language on startup.
-- **UI Text and TextMeshPro** — `LocalizedText` works with both the legacy `Text` component and `TMP_Text`.
-- **Localized images** — `LocalizedImage` swaps sprites per language on `Image` and `SpriteRenderer` (logos, flags, banners).
+- **UI Text and TextMeshPro** — `LocalizedText` works with both the legacy `Text` component and `TMP_Text`, including RTL flipping.
+- **Localized everything** — sprites (`LocalizedImage`), fonts (`LocalizedFont`), audio clips (`LocalizedAudio`) and whole GameObjects (`LocalizedObject`) per language.
+- **CLDR plurals & culture formatting** — `GetPlural("apples", 5)` → "5 jabłek"; `{price:C}` and `{date:d}` format in the active language's culture.
 - **Language dropdown** — a ready-made component that lists available languages and switches between them.
-- **One-click key collection** — gather the keys of every `LocalizedText` in your scenes straight into the editor table.
+- **Player-friendly startup** — remembers the player's language choice and detects the system language.
+- **Audit tools** — completion statistics, key-usage audit, one-click key collection and a pseudo-locale generator.
+- **Google Sheets sync** — keep translations in a shared sheet and sync with one click.
+- **Five sample scenes** — overview, plurals, formatting, objects and audio demos.
 - **Dynamic values** — replace `{token}` placeholders in translations straight from the API.
 - **Built-in editor** — create, edit and save localization files without leaving Unity.
 - **Edit mode preview** — switch languages in the inspector and see your scene texts update instantly.

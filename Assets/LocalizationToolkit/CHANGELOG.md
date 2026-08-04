@@ -2,6 +2,21 @@
 
 All notable changes to the Localization Toolkit are documented in this file.
 
+## [2.3.0] - 2026-08-04
+
+### Added
+- Culture-aware formatting: `FormatLocalized` renders `{token:format}` placeholders (numbers, dates, currency) with the active language's culture.
+- Right-to-left support: configurable RTL language list; `LocalizedText` flips TextMeshPro direction and mirrors alignment.
+- `LocalizedAudio` component: per-language audio clips for voice-overs.
+- `LocalizedObject` component: exactly one active GameObject per language.
+- Welcome window with quick-start actions, shown once after import.
+- Statistics quick-edit: jump to a language with its empty entries filtered; new *Only Empty* table filter.
+- Sample scene series: `Demo_Plurals`, `Demo_Formatting`, `Demo_Objects` and `Demo_Audio` cover every feature hands-on.
+- GitHub Actions workflow running the edit mode test suite.
+
+### Changed
+- Component inspectors share one language-popup building block (`LocalizationEditorGui`).
+
 ## [2.2.0] - 2026-08-04
 
 ### Added

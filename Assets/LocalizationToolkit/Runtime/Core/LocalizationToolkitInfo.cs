@@ -4,7 +4,7 @@ namespace UniversityOfGames.LocalizationToolkit
 	public static class LocalizationToolkitInfo
 	{
 		/// <summary>Version of the installed package.</summary>
-		public const string Version = "2.2.0";
+		public const string Version = "2.3.0";
 
 		/// <summary>Online documentation of the package.</summary>
 		public const string DocumentationUrl = "https://github.com/universityofgames/unity-localization-toolkit#readme";
