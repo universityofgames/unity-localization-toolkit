@@ -9,7 +9,8 @@ A lightweight, production-ready localization system for Unity 6. Add multi-langu
 ## Features
 
 - **Three file formats** — load and save translations as JSON, XML or CSV.
-- **Local & remote sources** — read files from `StreamingAssets` or download them from any URL.
+- **Drag & drop setup** — assign a localization `TextAsset` directly in the inspector (format detected automatically); `StreamingAssets` files and remote URLs are also supported.
+- **AI translation** — translate missing entries with Claude (Anthropic) or GPT (OpenAI) straight from the Localization Editor, using your own API key.
 - **Automatic language detection** — optionally match the player's system language on startup.
 - **UI Text and TextMeshPro** — `LocalizedText` works with both the legacy `Text` component and `TMP_Text`.
 - **Language dropdown** — a ready-made component that lists available languages and switches between them.
@@ -26,11 +27,11 @@ A lightweight, production-ready localization system for Unity 6. Add multi-langu
 ## Quick Start
 
 1. **Add the manager** — create an empty GameObject and add the `Localization Manager` component (*Add Component → Localization Toolkit → Localization Manager*).
-2. **Point it at your data** — enter a file name (e.g. `lang`) and format for a file in `Assets/StreamingAssets`, or paste a remote URL.
+2. **Point it at your data** — drag a localization file (JSON, XML or CSV) into the *File Asset* slot. Sample files live in `LocalizationToolkit/Samples/LanguageFiles`. Alternatively, use a file in `Assets/StreamingAssets` or a remote URL.
 3. **Localize your texts** — add the `Localized Text` component to any `Text` or `TextMeshPro` object and assign a translation key.
 4. **Optional** — add the `Language Dropdown` component to a `Dropdown` or `TMP_Dropdown` to let players switch languages at runtime.
 
-Press Play — texts are resolved automatically, and every language change refreshes all localized components.
+Press Play — texts are resolved automatically, and every language change refreshes all localized components. Open `LocalizationToolkit/Samples/Demo.unity` to see a working setup.
 
 ## Localization Files
 
@@ -77,6 +78,16 @@ Open **Tools → Localization Toolkit → Localization Editor** to create new lo
 
 <img width="695" alt="Localization editor window" src="https://user-images.githubusercontent.com/10097678/157235561-144d2190-4257-4b67-870a-2a4bd93be797.png">
 
+## AI Translation
+
+The Localization Editor includes an **AI Translation** section that fills in missing translations for the selected language using an AI model:
+
+1. Load or create localization data and add the target language.
+2. Pick a provider — **Claude (Anthropic)** or **GPT (OpenAI)** — and paste your API key.
+3. Select the target language in the grid and press **Translate With AI**.
+
+Only empty entries are translated by default (enable *Overwrite Existing* to retranslate everything), keys and `{token}` placeholders are preserved, and you can review every value in the grid before saving. The API key is stored in `EditorPrefs` on your machine only — it is never written to project files or builds.
+
 ## Scripting API
 
 ```csharp
@@ -98,14 +109,21 @@ LocalizationManager.LanguageChanged += () => Debug.Log("Language switched!");
 
 ## Project Structure
 
+Everything ships inside a single folder:
+
 ```
 Assets/LocalizationToolkit/
-├── Editor/       Custom inspectors and the Localization Editor window
+├── Editor/
+│   ├── Translation/   AI translation (Claude / GPT) integration
+│   └── ...            Custom inspectors and the Localization Editor window
 ├── Runtime/
-│   ├── Core/        LocalizationManager, LocalizationData, file formats
-│   ├── Components/  LocalizedText, LanguageDropdown
-│   └── Utilities/   Web loading, CSV parsing, token formatting
-└── Samples/      Demo scene (sample data lives in Assets/StreamingAssets)
+│   ├── Core/          LocalizationManager, LocalizationData, file formats
+│   ├── Components/    LocalizedText, LanguageDropdown
+│   └── Utilities/     Web loading, CSV parsing, token formatting
+├── Samples/
+│   ├── Demo.unity     Ready-to-play demo scene
+│   └── LanguageFiles/ Sample translations (JSON, XML, CSV)
+└── Tests/             Edit mode test suite
 ```
 
 * * *
