@@ -1,66 +1,69 @@
 # Asset Store Listing — Localization Toolkit
 
-Working copy for the Unity Asset Store product page. Everything below is ready to
-paste into the publisher portal.
+Ready-to-paste copy for the Unity Asset Store publisher portal, structured exactly
+like the portal form fields.
 
-## Title
+## Summary (max 180 characters — currently 173)
 
-**Localization Toolkit — AI Translation, Plurals & More**
+Complete localization for Unity 6: one-click AI translation (Claude/GPT), CLDR plurals, localized sprites, fonts and audio, Google Sheets sync and a full in-editor workflow.
 
-## Tagline (short description)
-
-Localize your game in minutes. JSON/XML/CSV, one-click AI translation (Claude/GPT),
-CLDR plurals, per-language fonts and sprites, Google Sheets sync and a full editor.
-
-## Long description
+## Description
 
 **Ship your game in 10 languages, not 1.** Localization Toolkit is a complete,
 lightweight localization system with the fastest workflow on the store: drop a
-language file on a component, add Localized Text to your UI and press play.
+language file (JSON, XML or CSV) on the Localization Manager, add Localized Text to
+your UI and press Play. The player's system language is detected automatically and
+their choice is remembered between sessions.
 
 **Translate everything with AI.** Connect your own Anthropic (Claude) or OpenAI (GPT)
-API key and translate all languages with one click. A project profile feeds the AI
+API key and translate every language with one click. A project profile feeds the AI
 your game's description, tone of voice and a do-not-translate glossary — so "Mana"
 stays "Mana" and the tone fits your game. Only missing entries are translated, every
-result lands in a review table first, and your key never leaves your machine.
+result lands in a review table before you save, and your key never leaves your
+machine.
 
 **Grammar done right.** CLDR plural rules give every language its correct forms —
 1 apple / 2 apples, 1 jabłko / 2 jabłka / 5 jabłek — with a one-line API:
-`GetPlural("apples", count)`. Numbers, dates and currency format themselves in the
-active language's culture: `{price:C}`, `{date:d}`.
+GetPlural("apples", count). Numbers, dates and currency format themselves in the
+active language's culture: {price:C}, {date:d}.
 
 **Localize more than text.** Swap sprites (logos, flags), fonts (CJK, Cyrillic),
 audio clips (voice-overs) and whole GameObjects per language — each with its own
-drag-and-drop component and live edit-mode preview.
+drag-and-drop component and live edit-mode preview. TextMeshPro and legacy UI Text
+are both supported, including right-to-left flipping for Arabic and Hebrew.
 
 **Stay in control.** The Localization Editor window shows per-language completion
 bars, audits which keys your scenes actually use, collects keys from your whole
-project with one click, generates a pseudo-locale to catch UI overflow, and syncs
-with a published Google Sheet.
+project with one click, generates a pseudo-locale that catches UI overflow before
+your players do, and syncs with a published Google Sheet.
 
-### Feature list
+Works with any genre and any render pipeline — it is pure UI and C#. Five sample
+scenes, a full user guide and the complete, XML-documented source code are included.
 
-- JSON, XML and CSV localization files (format auto-detected)
-- AI translation: Claude (Anthropic) & GPT (OpenAI), batch mode, glossary, tone control
-- CLDR plural rules: Polish, Russian, Czech, Arabic, French, Romanian, CJK and more
-- Culture-aware number/date/currency formatting per language
-- Components: Localized Text (UI Text + TextMeshPro), Localized Image, Localized Font,
-  Localized Audio, Localized Object, Language Dropdown
-- Right-to-left support for TextMeshPro (Arabic, Hebrew)
-- Automatic system-language detection + remembered player choice (PlayerPrefs)
-- Localization Editor: statistics, key audit, key collection, pseudo-localization,
-  Google Sheets sync, search and filters
-- Remote loading: blocking or async (WebGL friendly)
-- Full XML-documented API, edit mode test suite, single-folder package
-- Demo scenes covering every feature
+-- -- --
 
-### Technical details
+University of Games is a small research center for indie game developers — a place
+dedicated to sharing passion, knowledge and adventures in the game industry. We want
+it to be a home of in-depth explanations and ready-to-use solutions that help you
+solve problems and grow. Your support lets us create even more content for
+developers, students and teachers all over the world.
 
-- Unity 6000.5+, built-in render pipeline agnostic (pure UI/C#)
-- Dependencies: com.unity.ugui, com.unity.nuget.newtonsoft-json (default in Unity 6)
-- AI translation is editor-only; API keys are stored in EditorPrefs, never in assets
-  or builds; requests go directly to the provider's official endpoint
-- Full source code included
+## Technical details
+
+- Three file formats: JSON, XML and CSV, with automatic format detection
+- AI translation (editor-only): Claude (Anthropic) and GPT (OpenAI), batch mode over all languages, glossary and tone control via profile assets; API keys stay in EditorPrefs, never in assets or builds
+- CLDR plural rules: English-like, Polish, Russian/Ukrainian, Czech/Slovak, French, Romanian, Arabic (all six forms) and CJK
+- Culture-aware {token:format} formatting: numbers, currency and dates per language
+- Components: Localized Text, Localized Image, Localized Font, Localized Audio, Localized Object, Language Dropdown — all with custom inspectors and live edit-mode preview
+- TextMeshPro and legacy UI Text support, including RTL direction and mirrored alignment
+- Automatic system-language detection plus remembered player choice (PlayerPrefs)
+- Localization Editor: completion statistics, key-usage audit, project-wide key collection, pseudo-localization generator, search and empty-value filters
+- Google Sheets sync: publish a sheet as CSV and update your data with one click
+- Remote loading: blocking or coroutine-based async (WebGL friendly)
+- Loads from TextAsset (recommended), StreamingAssets or any URL; runtime data injection via LoadData
+- Five sample scenes: overview, plurals, formatting, per-language objects and audio
+- 119 edit mode tests, fully XML-documented public API, single-folder package
+- Requires Unity 6000.5+; dependencies: com.unity.ugui, com.unity.nuget.newtonsoft-json (default in Unity 6)
 
 ## Keywords
 
@@ -75,6 +78,7 @@ ChatGPT, Claude, plurals, CSV, Google Sheets, TextMeshPro, RTL, font, translate
 4. Localized Image / Localized Font inspectors with language popups.
 5. Pseudo-locale in the demo scene (visible overflow markers).
 6. Google Sheets side by side with the synced editor table.
+7. Demo_Plurals scene showing "5 jabłek" with the counter.
 
 ## GIF storyboard (main media)
 

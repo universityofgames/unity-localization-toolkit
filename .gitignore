@@ -72,3 +72,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 # Mono crash dumps from batch mode runs
 mono_crash.*
+
+# macOS
+.DS_Store
