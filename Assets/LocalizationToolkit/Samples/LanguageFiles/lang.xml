@@ -8,6 +8,7 @@
     <bye>See you soon!</bye>
     <apples.one>{count} apple</apples.one>
     <apples.other>{count} apples</apples.other>
+    <stats_line>Score: {score:N0} · Reward: {reward:C} · Today: {date:d}</stats_line>
   </default>
   <English>
     <title>Localization Toolkit</title>
@@ -17,6 +18,7 @@
     <bye>See you soon!</bye>
     <apples.one>{count} apple</apples.one>
     <apples.other>{count} apples</apples.other>
+    <stats_line>Score: {score:N0} · Reward: {reward:C} · Today: {date:d}</stats_line>
   </English>
   <Polish>
     <title>Localization Toolkit</title>
@@ -28,6 +30,7 @@
     <apples.few>{count} jabłka</apples.few>
     <apples.many>{count} jabłek</apples.many>
     <apples.other>{count} jabłka</apples.other>
+    <stats_line>Wynik: {score:N0} · Nagroda: {reward:C} · Dziś: {date:d}</stats_line>
   </Polish>
   <German>
     <title>Localization Toolkit</title>
@@ -37,6 +40,7 @@
     <bye>Bis bald!</bye>
     <apples.one>{count} Apfel</apples.one>
     <apples.other>{count} Äpfel</apples.other>
+    <stats_line>Punkte: {score:N0} · Belohnung: {reward:C} · Heute: {date:d}</stats_line>
   </German>
   <Spanish>
     <title>Localization Toolkit</title>
@@ -46,6 +50,7 @@
     <bye>¡Hasta pronto!</bye>
     <apples.one>{count} manzana</apples.one>
     <apples.other>{count} manzanas</apples.other>
+    <stats_line>Puntuación: {score:N0} · Recompensa: {reward:C} · Hoy: {date:d}</stats_line>
   </Spanish>
   <French>
     <title>Localization Toolkit</title>
@@ -55,5 +60,6 @@
     <bye>À bientôt !</bye>
     <apples.one>{count} pomme</apples.one>
     <apples.other>{count} pommes</apples.other>
+    <stats_line>Score : {score:N0} · Récompense : {reward:C} · Aujourd'hui : {date:d}</stats_line>
   </French>
 </translations>

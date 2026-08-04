@@ -8,3 +8,4 @@ apples.one,{count} apple,{count} apple,{count} jabłko,{count} Apfel,{count} man
 apples.few,,,{count} jabłka,,,
 apples.many,,,{count} jabłek,,,
 apples.other,{count} apples,{count} apples,{count} jabłka,{count} Äpfel,{count} manzanas,{count} pommes
+stats_line,Score: {score:N0} · Reward: {reward:C} · Today: {date:d},Score: {score:N0} · Reward: {reward:C} · Today: {date:d},Wynik: {score:N0} · Nagroda: {reward:C} · Dziś: {date:d},Punkte: {score:N0} · Belohnung: {reward:C} · Heute: {date:d},Puntuación: {score:N0} · Recompensa: {reward:C} · Hoy: {date:d},Score : {score:N0} · Récompense : {reward:C} · Aujourd'hui : {date:d}

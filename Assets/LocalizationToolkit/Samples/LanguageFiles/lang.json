@@ -7,7 +7,8 @@
       "language_label": "Language",
       "bye": "See you soon!",
       "apples.one": "{count} apple",
-      "apples.other": "{count} apples"
+      "apples.other": "{count} apples",
+      "stats_line": "Score: {score:N0} · Reward: {reward:C} · Today: {date:d}"
     },
     "English": {
       "title": "Localization Toolkit",
@@ -16,7 +17,8 @@
       "language_label": "Language",
       "bye": "See you soon!",
       "apples.one": "{count} apple",
-      "apples.other": "{count} apples"
+      "apples.other": "{count} apples",
+      "stats_line": "Score: {score:N0} · Reward: {reward:C} · Today: {date:d}"
     },
     "Polish": {
       "title": "Localization Toolkit",
@@ -27,7 +29,8 @@
       "apples.one": "{count} jabłko",
       "apples.few": "{count} jabłka",
       "apples.many": "{count} jabłek",
-      "apples.other": "{count} jabłka"
+      "apples.other": "{count} jabłka",
+      "stats_line": "Wynik: {score:N0} · Nagroda: {reward:C} · Dziś: {date:d}"
     },
     "German": {
       "title": "Localization Toolkit",
@@ -36,7 +39,8 @@
       "language_label": "Sprache",
       "bye": "Bis bald!",
       "apples.one": "{count} Apfel",
-      "apples.other": "{count} Äpfel"
+      "apples.other": "{count} Äpfel",
+      "stats_line": "Punkte: {score:N0} · Belohnung: {reward:C} · Heute: {date:d}"
     },
     "Spanish": {
       "title": "Localization Toolkit",
@@ -45,7 +49,8 @@
       "language_label": "Idioma",
       "bye": "¡Hasta pronto!",
       "apples.one": "{count} manzana",
-      "apples.other": "{count} manzanas"
+      "apples.other": "{count} manzanas",
+      "stats_line": "Puntuación: {score:N0} · Recompensa: {reward:C} · Hoy: {date:d}"
     },
     "French": {
       "title": "Localization Toolkit",
@@ -54,7 +59,8 @@
       "language_label": "Langue",
       "bye": "À bientôt !",
       "apples.one": "{count} pomme",
-      "apples.other": "{count} pommes"
+      "apples.other": "{count} pommes",
+      "stats_line": "Score : {score:N0} · Récompense : {reward:C} · Aujourd'hui : {date:d}"
     }
   }
 }
