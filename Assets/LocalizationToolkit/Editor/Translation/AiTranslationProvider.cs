@@ -17,18 +17,24 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		public const string DefaultOpenAiModel = "gpt-4o";
 
 		/// <summary>Display name of the provider.</summary>
+		/// <param name="provider">Provider to describe.</param>
+		/// <returns>A human-readable provider name for UI purposes.</returns>
 		public static string GetDisplayName(this AiTranslationProvider provider)
 		{
 			return provider == AiTranslationProvider.Claude ? "Claude (Anthropic)" : "GPT (OpenAI)";
 		}
 
 		/// <summary>Default model identifier used when the user has not entered one.</summary>
+		/// <param name="provider">Provider to resolve the default for.</param>
+		/// <returns>The default model identifier.</returns>
 		public static string GetDefaultModel(this AiTranslationProvider provider)
 		{
 			return provider == AiTranslationProvider.Claude ? DefaultClaudeModel : DefaultOpenAiModel;
 		}
 
 		/// <summary>HTTP endpoint that translation requests are sent to.</summary>
+		/// <param name="provider">Provider to resolve the endpoint for.</param>
+		/// <returns>The provider's official API endpoint.</returns>
 		public static string GetEndpoint(this AiTranslationProvider provider)
 		{
 			return provider == AiTranslationProvider.Claude ? ClaudeEndpoint : OpenAiEndpoint;

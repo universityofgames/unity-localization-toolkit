@@ -7,6 +7,7 @@ namespace UniversityOfGames.LocalizationToolkit
 	/// in play mode and resolved on demand in edit mode, so derived components can
 	/// be used both at runtime and from editor tooling.
 	/// </summary>
+	/// <typeparam name="T">The concrete singleton component type.</typeparam>
 	public abstract class MonoBehaviourSingleton<T> : MonoBehaviour where T : MonoBehaviourSingleton<T>
 	{
 		private static T _instance;

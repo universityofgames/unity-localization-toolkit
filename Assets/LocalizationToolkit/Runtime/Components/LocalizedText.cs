@@ -6,12 +6,20 @@ using UnityEngine.UI;
 namespace UniversityOfGames.LocalizationToolkit
 {
 	/// <summary>
-	/// Keeps a UI Text or TextMeshPro component in sync with the translation
-	/// assigned to a key, updating automatically when the language changes.
+	/// Keeps a UI <see cref="Text"/> or TextMeshPro <see cref="TMP_Text"/> component in
+	/// sync with the translation assigned to a key.
 	/// </summary>
+	/// <remarks>
+	/// Add this component next to any text component and assign a translation key.
+	/// The text refreshes when the component is enabled and every time
+	/// <see cref="LocalizationManager.LanguageChanged"/> is raised. Thanks to
+	/// <see cref="ExecuteAlways"/>, language switches made in the inspector preview
+	/// directly in the Scene view.
+	/// </remarks>
 	[ExecuteAlways]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("Localization Toolkit/Localized Text")]
+	[HelpURL(LocalizationToolkitInfo.DocumentationUrl)]
 	public class LocalizedText : MonoBehaviour
 	{
 		[SerializeField, FormerlySerializedAs("key")]
@@ -21,7 +29,7 @@ namespace UniversityOfGames.LocalizationToolkit
 		private Text _uiText;
 		private TMP_Text _tmpText;
 
-		/// <summary>Translation key used to look up the localized value.</summary>
+		/// <summary>Translation key used to look up the localized value. Setting it refreshes the text.</summary>
 		public string Key
 		{
 			get => _key;

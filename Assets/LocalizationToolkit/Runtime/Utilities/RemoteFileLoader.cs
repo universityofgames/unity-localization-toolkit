@@ -9,11 +9,14 @@ namespace UniversityOfGames.LocalizationToolkit
 		/// <summary>Request timeout in seconds.</summary>
 		public const int TimeoutSeconds = 10;
 
-		/// <summary>
-		/// Downloads the given URL and returns its body as text, or an empty string on failure.
+		/// <summary>Downloads the given URL and returns its body as text.</summary>
+		/// <param name="url">HTTP(S) address of the file.</param>
+		/// <returns>The trimmed response body, or an empty string when the request failed.</returns>
+		/// <remarks>
 		/// The call blocks until the request completes; localization files are expected to be
-		/// small and loaded once. Not supported on WebGL.
-		/// </summary>
+		/// small and loaded once. Blocking downloads are not supported on WebGL — load the
+		/// data from a <see cref="UnityEngine.TextAsset"/> on that platform instead.
+		/// </remarks>
 		public static string DownloadText(string url)
 		{
 			using (UnityWebRequest request = UnityWebRequest.Get(url))
@@ -35,6 +38,9 @@ namespace UniversityOfGames.LocalizationToolkit
 		}
 
 		/// <summary>Tries to resolve the localization file format from the URL's file extension.</summary>
+		/// <param name="url">URL of the file; query strings and fragments are ignored.</param>
+		/// <param name="format">Resolved format when the method returns true.</param>
+		/// <returns>True when the URL ends in a supported extension.</returns>
 		public static bool TryGetFileFormatFromUrl(string url, out LocalizationFileFormat format)
 		{
 			format = default;

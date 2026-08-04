@@ -10,6 +10,8 @@ namespace UniversityOfGames.LocalizationToolkit
 		private static readonly char[] CharactersRequiringQuotes = { ',', '"', '\n', '\r' };
 
 		/// <summary>Parses CSV text into rows of fields, honoring quoted fields.</summary>
+		/// <param name="text">Raw CSV contents.</param>
+		/// <returns>Rows of field values in document order.</returns>
 		internal static List<List<string>> Parse(string text)
 		{
 			var rows = new List<List<string>>();
@@ -85,6 +87,8 @@ namespace UniversityOfGames.LocalizationToolkit
 		}
 
 		/// <summary>Joins fields into a single CSV row, quoting fields when required.</summary>
+		/// <param name="fields">Field values of the row.</param>
+		/// <returns>The encoded CSV line without a trailing newline.</returns>
 		internal static string WriteRow(IEnumerable<string> fields)
 		{
 			return string.Join(",", fields.Select(EscapeField));

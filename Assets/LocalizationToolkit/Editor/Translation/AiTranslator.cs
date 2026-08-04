@@ -23,6 +23,10 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		private const int MaxOutputTokens = 16000;
 
 		/// <summary>Builds the instruction prompt for a translation batch.</summary>
+		/// <param name="sourceLanguage">Language the entries are written in.</param>
+		/// <param name="targetLanguage">Language to translate into.</param>
+		/// <param name="entries">Key-to-source-text pairs to translate.</param>
+		/// <returns>The complete prompt sent as the user message.</returns>
 		public static string BuildPrompt(string sourceLanguage, string targetLanguage, IDictionary<string, string> entries)
 		{
 			var builder = new StringBuilder();
@@ -41,6 +45,10 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		}
 
 		/// <summary>Builds the JSON request body for the given provider.</summary>
+		/// <param name="provider">Target provider; determines the payload shape.</param>
+		/// <param name="model">Model identifier to request.</param>
+		/// <param name="prompt">User message produced by <see cref="BuildPrompt"/>.</param>
+		/// <returns>The serialized request body.</returns>
 		public static string BuildRequestBody(AiTranslationProvider provider, string model, string prompt)
 		{
 			var messages = new JArray
@@ -65,6 +73,10 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		}
 
 		/// <summary>Extracts the model's text output from a provider response.</summary>
+		/// <param name="provider">Provider the response came from.</param>
+		/// <param name="responseJson">Raw response body.</param>
+		/// <returns>The concatenated text output of the model.</returns>
+		/// <exception cref="InvalidOperationException">Thrown when the response contains no text, e.g. on a refusal.</exception>
 		public static string ExtractResponseText(AiTranslationProvider provider, string responseJson)
 		{
 			JObject root = JObject.Parse(responseJson);
@@ -95,6 +107,9 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 		}
 
 		/// <summary>Parses the model output into a key-to-translation dictionary, tolerating markdown fences.</summary>
+		/// <param name="modelOutput">Text output of the model.</param>
+		/// <returns>Translated values indexed by their original keys.</returns>
+		/// <exception cref="FormatException">Thrown when the output contains no parsable JSON object.</exception>
 		public static Dictionary<string, string> ParseTranslations(string modelOutput)
 		{
 			if (string.IsNullOrWhiteSpace(modelOutput))
@@ -113,10 +128,15 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 			return translations;
 		}
 
-		/// <summary>
-		/// Translates the given entries and returns the resulting dictionary, or null when
-		/// the request failed or was cancelled. Blocks the editor and shows a progress bar.
-		/// </summary>
+		/// <summary>Translates the given entries with the configured provider.</summary>
+		/// <param name="provider">AI provider to use.</param>
+		/// <param name="apiKey">API key of the user's provider account.</param>
+		/// <param name="model">Model identifier to request.</param>
+		/// <param name="sourceLanguage">Language the entries are written in.</param>
+		/// <param name="targetLanguage">Language to translate into.</param>
+		/// <param name="entries">Key-to-source-text pairs to translate.</param>
+		/// <returns>The translated entries, or null when the request failed or was cancelled.</returns>
+		/// <remarks>Blocks the editor while the request runs and shows a cancelable progress bar.</remarks>
 		public static Dictionary<string, string> TranslateEntries(
 			AiTranslationProvider provider, string apiKey, string model,
 			string sourceLanguage, string targetLanguage, IDictionary<string, string> entries)
