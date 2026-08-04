@@ -4,3 +4,7 @@ welcome,Welcome!,Welcome!,Witaj!,Willkommen!,¡Bienvenido!,Bienvenue !
 description,Switch the language using the dropdown below.,Switch the language using the dropdown below.,"Zmień język, korzystając z listy poniżej.",Wechsle die Sprache über das Dropdown-Menü unten.,Cambia el idioma con el menú desplegable de abajo.,Changez la langue à l'aide du menu déroulant ci-dessous.
 language_label,Language,Language,Język,Sprache,Idioma,Langue
 bye,See you soon!,See you soon!,Do zobaczenia!,Bis bald!,¡Hasta pronto!,À bientôt !
+apples.one,{count} apple,{count} apple,{count} jabłko,{count} Apfel,{count} manzana,{count} pomme
+apples.few,,,{count} jabłka,,,
+apples.many,,,{count} jabłek,,,
+apples.other,{count} apples,{count} apples,{count} jabłka,{count} Äpfel,{count} manzanas,{count} pommes

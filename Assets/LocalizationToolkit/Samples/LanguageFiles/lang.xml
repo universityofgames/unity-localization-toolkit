@@ -6,6 +6,8 @@
     <description>Switch the language using the dropdown below.</description>
     <language_label>Language</language_label>
     <bye>See you soon!</bye>
+    <apples.one>{count} apple</apples.one>
+    <apples.other>{count} apples</apples.other>
   </default>
   <English>
     <title>Localization Toolkit</title>
@@ -13,6 +15,8 @@
     <description>Switch the language using the dropdown below.</description>
     <language_label>Language</language_label>
     <bye>See you soon!</bye>
+    <apples.one>{count} apple</apples.one>
+    <apples.other>{count} apples</apples.other>
   </English>
   <Polish>
     <title>Localization Toolkit</title>
@@ -20,6 +24,10 @@
     <description>Zmień język, korzystając z listy poniżej.</description>
     <language_label>Język</language_label>
     <bye>Do zobaczenia!</bye>
+    <apples.one>{count} jabłko</apples.one>
+    <apples.few>{count} jabłka</apples.few>
+    <apples.many>{count} jabłek</apples.many>
+    <apples.other>{count} jabłka</apples.other>
   </Polish>
   <German>
     <title>Localization Toolkit</title>
@@ -27,6 +35,8 @@
     <description>Wechsle die Sprache über das Dropdown-Menü unten.</description>
     <language_label>Sprache</language_label>
     <bye>Bis bald!</bye>
+    <apples.one>{count} Apfel</apples.one>
+    <apples.other>{count} Äpfel</apples.other>
   </German>
   <Spanish>
     <title>Localization Toolkit</title>
@@ -34,6 +44,8 @@
     <description>Cambia el idioma con el menú desplegable de abajo.</description>
     <language_label>Idioma</language_label>
     <bye>¡Hasta pronto!</bye>
+    <apples.one>{count} manzana</apples.one>
+    <apples.other>{count} manzanas</apples.other>
   </Spanish>
   <French>
     <title>Localization Toolkit</title>
@@ -41,5 +53,7 @@
     <description>Changez la langue à l'aide du menu déroulant ci-dessous.</description>
     <language_label>Langue</language_label>
     <bye>À bientôt !</bye>
+    <apples.one>{count} pomme</apples.one>
+    <apples.other>{count} pommes</apples.other>
   </French>
 </translations>

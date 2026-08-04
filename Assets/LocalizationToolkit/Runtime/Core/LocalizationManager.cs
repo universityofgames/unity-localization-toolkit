@@ -131,6 +131,19 @@ namespace UniversityOfGames.LocalizationToolkit
 			return Path.Combine(Application.streamingAssetsPath, _localFileName + "." + _fileFormat.ToExtension());
 		}
 
+		/// <summary>Loads an in-memory localization data set directly.</summary>
+		/// <param name="data">The data set to activate.</param>
+		public void LoadData(LocalizationData data)
+		{
+			if (data == null)
+			{
+				Debug.LogError("[LocalizationToolkit] Cannot load a null localization data set.", this);
+				return;
+			}
+
+			ApplyData(data);
+		}
+
 		/// <summary>Loads localization data from a text asset; the format is detected automatically.</summary>
 		/// <param name="asset">Text asset containing JSON, XML or CSV localization data.</param>
 		public void LoadFromTextAsset(TextAsset asset)
@@ -252,6 +265,38 @@ namespace UniversityOfGames.LocalizationToolkit
 		public string GetLocalizedValue(string key, params (string token, string value)[] tokens)
 		{
 			return LocalizationTextFormatter.ApplyTokens(GetLocalizedValue(key), tokens);
+		}
+
+		/// <summary>Returns the plural form of a translation using CLDR plural rules.</summary>
+		/// <param name="key">Base translation key; the category suffix is appended automatically.</param>
+		/// <param name="count">The item count deciding the plural category.</param>
+		/// <param name="tokens">Optional extra token replacements; <c>{count}</c> is always available.</param>
+		/// <returns>The plural translation with <c>{count}</c> and all tokens replaced.</returns>
+		/// <remarks>
+		/// Data files provide the forms as suffixed keys: <c>apples.one</c>, <c>apples.few</c>,
+		/// <c>apples.many</c>, <c>apples.other</c> (plus <c>.zero</c>/<c>.two</c> for Arabic).
+		/// Lookup falls back from the exact category to <c>.other</c> and finally to the bare key.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// // Polish data: apples.one = "{count} jabłko", apples.few = "{count} jabłka", apples.many = "{count} jabłek"
+		/// manager.GetPlural("apples", 5); // "5 jabłek"
+		/// </code>
+		/// </example>
+		public string GetPlural(string key, int count, params (string token, string value)[] tokens)
+		{
+			string category = PluralRules.Resolve(_activeLanguage, count).ToString().ToLowerInvariant();
+
+			if (!TryGetLocalizedValue(key + "." + category, out string text) &&
+				!TryGetLocalizedValue(key + ".other", out text) &&
+				!TryGetLocalizedValue(key, out text))
+			{
+				Debug.LogWarning($"[LocalizationToolkit] Missing plural key '{key}' (category '{category}') for language '{_activeLanguage}'.", this);
+				return _missingTranslationText;
+			}
+
+			text = LocalizationTextFormatter.ApplyTokens(text, ("count", count.ToString()));
+			return tokens != null && tokens.Length > 0 ? LocalizationTextFormatter.ApplyTokens(text, tokens) : text;
 		}
 
 		/// <summary>Tries to fetch the translation for the given key in the active language.</summary>

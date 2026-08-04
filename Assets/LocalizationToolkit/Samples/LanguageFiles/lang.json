@@ -5,42 +5,56 @@
       "welcome": "Welcome!",
       "description": "Switch the language using the dropdown below.",
       "language_label": "Language",
-      "bye": "See you soon!"
+      "bye": "See you soon!",
+      "apples.one": "{count} apple",
+      "apples.other": "{count} apples"
     },
     "English": {
       "title": "Localization Toolkit",
       "welcome": "Welcome!",
       "description": "Switch the language using the dropdown below.",
       "language_label": "Language",
-      "bye": "See you soon!"
+      "bye": "See you soon!",
+      "apples.one": "{count} apple",
+      "apples.other": "{count} apples"
     },
     "Polish": {
       "title": "Localization Toolkit",
       "welcome": "Witaj!",
       "description": "Zmień język, korzystając z listy poniżej.",
       "language_label": "Język",
-      "bye": "Do zobaczenia!"
+      "bye": "Do zobaczenia!",
+      "apples.one": "{count} jabłko",
+      "apples.few": "{count} jabłka",
+      "apples.many": "{count} jabłek",
+      "apples.other": "{count} jabłka"
     },
     "German": {
       "title": "Localization Toolkit",
       "welcome": "Willkommen!",
       "description": "Wechsle die Sprache über das Dropdown-Menü unten.",
       "language_label": "Sprache",
-      "bye": "Bis bald!"
+      "bye": "Bis bald!",
+      "apples.one": "{count} Apfel",
+      "apples.other": "{count} Äpfel"
     },
     "Spanish": {
       "title": "Localization Toolkit",
       "welcome": "¡Bienvenido!",
       "description": "Cambia el idioma con el menú desplegable de abajo.",
       "language_label": "Idioma",
-      "bye": "¡Hasta pronto!"
+      "bye": "¡Hasta pronto!",
+      "apples.one": "{count} manzana",
+      "apples.other": "{count} manzanas"
     },
     "French": {
       "title": "Localization Toolkit",
       "welcome": "Bienvenue !",
       "description": "Changez la langue à l'aide du menu déroulant ci-dessous.",
       "language_label": "Langue",
-      "bye": "À bientôt !"
+      "bye": "À bientôt !",
+      "apples.one": "{count} pomme",
+      "apples.other": "{count} pommes"
     }
   }
 }
