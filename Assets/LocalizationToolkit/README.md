@@ -28,6 +28,6 @@ LocalizationManager.LanguageChanged += OnLanguageChanged;
 
 ## Support
 
+- Support portal: https://university-of-games.gitbook.io/
 - Website: http://www.universityofgames.net
-- Email: hello@universityofgames.net
 - More assets: https://assetstore.unity.com/publishers/25633

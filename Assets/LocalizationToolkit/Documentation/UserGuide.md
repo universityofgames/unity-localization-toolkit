@@ -1,6 +1,6 @@
 # Localization Toolkit — User Guide
 
-Version 2.0.0 · Requires Unity 6000.5 or newer · Support: hello@universityofgames.net
+Version 2.3.0 · Requires Unity 6000.5 or newer · Support: https://university-of-games.gitbook.io/
 
 Localization Toolkit is a lightweight, production-ready localization system. Keep your
 translations in JSON, XML or CSV files, edit and AI-translate them in a dedicated editor
@@ -316,6 +316,6 @@ File Asset workflow, or in `Assets/StreamingAssets` when loading by file name.
 
 ## 9. Support
 
+- Support portal: https://university-of-games.gitbook.io/
 - Documentation: https://github.com/universityofgames/unity-localization-toolkit#readme
-- Email: hello@universityofgames.net
 - More assets: https://assetstore.unity.com/publishers/25633

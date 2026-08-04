@@ -75,10 +75,13 @@ namespace UniversityOfGames.LocalizationToolkit.Editor
 				Application.OpenURL(LocalizationToolkitInfo.DocumentationUrl);
 
 			GUILayout.FlexibleSpace();
-			GUILayout.Label("Support: " + LocalizationToolkitInfo.SupportEmail, new GUIStyle(EditorStyles.miniLabel)
+			using (new EditorGUILayout.HorizontalScope())
 			{
-				alignment = TextAnchor.MiddleCenter
-			});
+				GUILayout.FlexibleSpace();
+				if (EditorGUILayout.LinkButton(LocalizationToolkitInfo.SupportUrl))
+					Application.OpenURL(LocalizationToolkitInfo.SupportUrl);
+				GUILayout.FlexibleSpace();
+			}
 			GUILayout.Space(8);
 		}
 

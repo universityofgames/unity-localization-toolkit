@@ -11,5 +11,8 @@ namespace UniversityOfGames.LocalizationToolkit
 
 		/// <summary>Support contact of the publisher.</summary>
 		public const string SupportEmail = "hello@universityofgames.net";
+
+		/// <summary>Support portal of the publisher.</summary>
+		public const string SupportUrl = "https://university-of-games.gitbook.io/";
 	}
 }
